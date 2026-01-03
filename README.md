@@ -48,6 +48,7 @@ If your reaction is *“this wouldn’t work for me,”* that’s expected — i
 ## License
 
 Use, fork, modify, or ignore freely.
+
 No warranty, no claims.
 
 ---
