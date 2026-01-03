@@ -1,0 +1,67 @@
+alias: Automation – Post-Restart Recovery Gates
+description: >
+  Two-tier post-restart recovery: critical paths (security, safety) execute
+  within 7 seconds; non-critical sensor/directive updates stagger across
+  45–75 seconds to avoid thundering-herd load spikes.
+  Demonstrates trigger-level `for:` (no action delays) and branching via trigger IDs.
+  Resilience: randomized non-critical delay flattens startup load; critical paths
+  prioritize perimeter/life-safety.
+
+  CHANGELOG:
+  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
+    Uses trigger-level `for:` only (no action delays), randomized non-critical
+    stagger to prevent thundering herd, and explicit critical vs non-critical
+    recovery paths.
+  - 2025-10-22: Introduced split recovery gates: critical (7s fixed) vs
+    non-critical (45–75s randomized) using trigger-level `for:`.
+  - 2025-10-18: Initial sample.
+
+
+mode: single
+# max_exceeded: silent  # Optional: avoids log noise if retriggered during startup
+
+triggers:
+  - alias: HA startup – critical paths (7s gate)
+    id: startup_critical
+    trigger: state
+    entity_id: timer.ha_startup_delay
+    from: active
+    to: idle
+    for:
+      seconds: 7
+
+  - alias: HA startup – non-critical staggered (45–75s random)
+    id: startup_noncritical
+    trigger: state
+    entity_id: timer.ha_startup_delay
+    from: active
+    to: idle
+    for:
+      seconds: "{{ range(45, 75) | random }}"
+
+actions:
+  - alias: Run the appropriate recovery path
+    if:
+      - condition: trigger
+        id: startup_critical
+    then:
+      - alias: Secure perimeter – prime alarm state
+        action: script.turn_on
+        target:
+          entity_id: script.security_prime_alarm_state
+
+      - alias: Enable life-safety monitors
+        action: script.turn_on
+        target:
+          entity_id: script.safety_enable_smoke_watch
+
+    elif:
+      - condition: trigger
+        id: startup_noncritical
+    then:
+      - alias: Refresh energy and lighting directives
+        action: homeassistant.update_entity
+        target:
+          entity_id:
+            - sensor.energy_dispatch_directive
+            - sensor.lighting_targets

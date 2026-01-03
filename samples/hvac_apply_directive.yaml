@@ -1,0 +1,66 @@
+alias: Automation – HVAC Apply Global Directive
+description: >
+  Applies sensor.hvac_control_directive to all climate zones via queued fan-out script.
+  Triggers on directive change and a non-critical post-start gate.
+
+  CHANGELOG:
+  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
+  - 2025-10-22: Introduced non-critical randomized trigger gate; queued fan-outs via script.
+  - 2025-10-19: Initial sample.
+
+mode: queued
+max: 3
+max_exceeded: silent
+
+triggers:
+  - alias: HVAC directive changed
+    id: directive_update
+    trigger: state
+    entity_id: sensor.hvac_control_directive
+
+  - alias: HA startup – non-critical staggered (45–75s random)
+    id: startup_noncritical
+    trigger: state
+    entity_id: timer.ha_startup_delay
+    from: active
+    to: idle
+    for:
+      seconds: "{{ range(45, 76) | random }}"
+
+actions:
+  - alias: Resolve directive and zones once (placeholder zones)
+    variables:
+      zones:
+        - climate.example_zone_1
+        - climate.example_zone_2
+        - climate.example_zone_3
+      directive_raw: "{{ states('sensor.hvac_control_directive') }}"
+      directive: "{{ directive_raw | lower | trim }}"
+
+  - alias: Apply directive to all zones (queued fan-out)
+    if:
+      - alias: Directive is actionable
+        condition: template
+        value_template: >
+          {{ has_value('sensor.hvac_control_directive')
+             and directive not in ['unknown', 'unavailable', 'none', ''] }}
+
+      - alias: Zones list is non-empty
+        condition: template
+        value_template: >
+          {{ zones is iterable and (zones | count) > 0 }}
+    then:
+      - alias: Fan-out apply to each zone via actuator script
+        repeat:
+          for_each: "{{ zones }}"
+          sequence:
+            - alias: Apply to {{ repeat.item | replace('climate.', '') }}
+              action: script.turn_on
+              target:
+                entity_id: script.hvac_actuator_apply_mode_targets_safely
+              data:
+                climate: "{{ repeat.item }}"
+                mode: "{{ directive }}"
+    else:
+      - alias: Not actionable – stop
+        stop: "Directive not actionable or no zones"

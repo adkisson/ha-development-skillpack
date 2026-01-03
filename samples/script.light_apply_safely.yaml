@@ -1,0 +1,61 @@
+alias: Script – Light Apply Safely
+description: >
+  Centralized light apply with idempotent guard and standard transition.
+  Uses a brightness + power-state guard to avoid redundant device writes.
+  Safe for repeated calls and concurrent fan-out.
+  Resilience: continue_on_error is intentional to tolerate transient device/mesh errors;
+  idempotency guard prevents redundant writes even if a call fails.
+
+  CHANGELOG:
+  - 2025-10-22: Initial release. Aligned with Lighting ON/ADJUST paths.
+  - 2026-01-02: Added explicit input normalization, clamped brightness handling,
+    unavailable-state guards, and GUI-safe structure. Verified on HA 2025.12+.
+
+mode: queued
+max: 10
+
+fields:
+  target:
+    description: >
+      Target light entity. Accepts either an entity_id string (preferred)
+      or a target mapping containing entity_id.
+    required: true
+  brightness_pct:
+    description: Desired brightness (integer 0–100). Defaults to 100 if omitted.
+    required: false
+
+sequence:
+  - alias: Normalize inputs
+    variables:
+      eid: >-
+        {% if target is mapping and target.entity_id is defined %}
+          {{ target.entity_id | default('', true) }}
+        {% else %}
+          {{ target | default('', true) }}
+        {% endif %}
+      want_pct: "{{ (brightness_pct | default(100) | int(100)) | max(0) | min(100) }}"
+      want_bri: "{{ ((want_pct * 255 / 100) | round(0) | int(0)) | max(0) | min(255) }}"
+      cur_state: "{{ states(eid) }}"
+      cur_bri_attr: "{{ state_attr(eid, 'brightness') }}"
+      cur_bri: "{{ cur_bri_attr | int(0) }}"
+      supports_brightness: "{{ cur_bri_attr is not none }}"
+      tol: 3
+
+  - alias: Idempotency guard (skip if already correct)
+    condition: template
+    value_template: >
+      {{ eid != ''
+         and has_value(eid)
+         and (
+           cur_state != 'on'
+           or (supports_brightness and ((cur_bri - want_bri) | abs > tol))
+         ) }}
+
+  - alias: Apply light settings
+    action: light.turn_on
+    target:
+      entity_id: "{{ eid }}"
+    data:
+      brightness_pct: "{{ want_pct }}"
+      transition: 1.5
+    continue_on_error: true

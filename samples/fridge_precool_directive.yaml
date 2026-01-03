@@ -1,0 +1,76 @@
+################################################################################
+# FRIDGE PRECOOL DIRECTIVE (TEMPLATE SENSOR)
+#
+# PURPOSE:
+#   Determines whether the fridge precool routine should execute, based on
+#   allocator permission, pause/override state, and an active chill timer.
+#
+# DESIGN PRINCIPLES:
+#   - Brains vs Muscles: this sensor decides; downstream automation acts.
+#   - Keep state atomic; attributes explain "why".
+#   - No republishing upstream facts in attributes.
+#   - No timestamps or churny attributes.
+#   - No `this.state` coupling; compute state once.
+#
+# STATES:
+#   - execute_precool: Allowed, not paused, and not already cooling.
+#   - cooling: Chill timer active.
+#   - hold: Not allowed, paused, or otherwise blocked.
+#
+# DEPENDENCIES:
+#   - sensor.power_budget_allocator (attr: fridge_precool_allowed)
+#   - input_boolean.fridge_cloudburst_pause
+#   - timer.fridge_chill
+#
+# CHANGELOG:
+# - 2026-01-02: Canonicalized per attribute rules (reason-only attributes,
+#   safe defaults, no raw-fact republishing, no schema versioning).
+# - 2025-10-22: Added reason mapping and simplified branches.
+# - 2025-10-18: Initial sample.
+################################################################################
+
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.power_budget_allocator
+          - input_boolean.fridge_cloudburst_pause
+          - timer.fridge_chill
+
+    sensor:
+      - name: "Fridge Precool Directive"
+        unique_id: fridge_precool_directive
+
+        variables:
+          allowed: >-
+            {{ state_attr('sensor.power_budget_allocator', 'fridge_precool_allowed')
+               | default(false) | bool }}
+          paused: "{{ is_state('input_boolean.fridge_cloudburst_pause', 'on') }}"
+          cooling_active: "{{ is_state('timer.fridge_chill', 'active') }}"
+
+          state_v: >-
+            {% if allowed and (not paused) and (not cooling_active) %}
+              execute_precool
+            {% elif cooling_active %}
+              cooling
+            {% else %}
+              hold
+            {% endif %}
+
+          reason_v: >-
+            {% if state_v == 'execute_precool' %}
+              Allowed; not paused; chill timer inactive
+            {% elif state_v == 'cooling' %}
+              Chill timer active
+            {% else %}
+              Blocked: not allowed or paused
+            {% endif %}
+
+        state: "{{ state_v }}"
+
+        attributes:
+          reason: "{{ reason_v }}"
+
+          # debug_allowed: "{{ allowed }}"
+          # debug_paused: "{{ paused }}"
+          # debug_cooling_active: "{{ cooling_active }}"

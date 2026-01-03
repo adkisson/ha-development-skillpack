@@ -1,0 +1,50 @@
+alias: "Lighting – Turn On Example via Central Script"
+description: >
+  Example lighting ON automation that delegates device writes to a centralized,
+  idempotent script. Manual override is evaluated first to provide an explicit
+  escape hatch. Skipped paths are silent by design.
+
+  CHANGELOG:
+  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
+  - 2025-10-22: Initial sample using central safe-apply script.
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - alias: "Motion detected (example)"
+    id: motion_on
+    trigger: state
+    entity_id: binary_sensor.example_motion
+    to: "on"
+
+conditions: []
+
+actions:
+  - alias: "Decide and act"
+    if:
+      - alias: "Manual override is ON"
+        condition: state
+        entity_id: input_boolean.manual_override
+        state: "on"
+    then:
+      - alias: "Manual override active – stop"
+        stop: "Manual override"
+
+    elif:
+      - alias: "Motion is ON"
+        condition: state
+        entity_id: binary_sensor.example_motion
+        state: "on"
+    then:
+      - alias: "Apply lighting via central script"
+        action: script.turn_on
+        target:
+          entity_id: script.light_apply_safely
+        data:
+          target: light.example_light_group
+          brightness_pct: 60
+
+    else:
+      - alias: "Not actionable – stop"
+        stop: "Not actionable"

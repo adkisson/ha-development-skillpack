@@ -1,0 +1,82 @@
+alias: Automation – Example Deterministic Pattern
+description: >
+  Deterministic automation with post-restart reconciliation gate.
+  Routes actions by trigger ID; no polling.
+  Demonstrates: trigger-based decision tree, post-restart gate with randomized delay,
+  and brains-vs-muscles pattern (sensor directives, automation routes).
+  Skipped paths are silent by design.
+
+  CHANGELOG:
+  - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - alias: Post-restart reconciliation gate (45–75s random)
+    id: ha_restart_noncritical
+    trigger: state
+    entity_id: timer.ha_startup_delay
+    from: active
+    to: idle
+    for:
+      seconds: "{{ range(45, 75) | random }}"
+
+  - alias: Source sensor changed
+    id: source_changed
+    trigger: state
+    entity_id: sensor.example_source
+
+  - alias: Time-based trigger (06:00 daily)
+    id: time_trigger
+    trigger: time
+    at: "06:00:00"
+
+actions:
+  - alias: Resolve inputs once
+    variables:
+      source_value: "{{ states('sensor.example_source') | float(0) }}"
+      directive_state: "{{ states('sensor.example_directive') }}"
+
+  - alias: Route by trigger ID
+    if:
+      - alias: Post-restart reconcile
+        condition: trigger
+        id: ha_restart_noncritical
+    then:
+      - alias: Reconcile directive
+        action: homeassistant.update_entity
+        target:
+          entity_id: sensor.example_directive
+
+    elif:
+      - alias: Source changed
+        condition: trigger
+        id: source_changed
+    then:
+      - alias: Apply directive
+        if:
+          - alias: Directive is active
+            condition: state
+            entity_id: sensor.example_directive
+            state: "on"
+        then:
+          - alias: Execute action
+            action: homeassistant.update_entity
+            target:
+              entity_id: sensor.example_target
+        else:
+          - alias: Directive not active – stop
+            stop: "Directive not active"
+
+    elif:
+      - alias: Time-based check
+        condition: trigger
+        id: time_trigger
+    then:
+      - alias: Daily check – stop
+        stop: "Daily check (no-op)"
+
+    else:
+      - alias: No applicable route – stop
+        stop: "No applicable route"

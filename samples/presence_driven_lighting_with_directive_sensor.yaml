@@ -1,0 +1,390 @@
+################################################################################
+# EXAMPLE AREA LIGHTING TARGETS – TEMPLATE SENSOR (CANONICAL)
+#
+# PURPOSE:
+#   Computes desired lighting targets (0–100%) for an example area based on:
+#   - Indoor lux (room illuminance)
+#   - Outdoor irradiance (solar intensity)
+#   - Time-of-day bands (evening vs dark hours vs daytime)
+#   - Optional sub-area presence (e.g., table present boosts a main light)
+#
+# OUTPUT:
+#   State: "on" or "off"
+#   Attributes:
+#     - reason: short human-readable explanation
+#     - has_targets: boolean (true if any target > 0)
+#     - items_json: JSON array of {light, brightness_pct} for batch apply scripts
+#     - unavailable_entities: list of lights currently unavailable/unknown
+#
+# INPUTS (replace with your real entities):
+#   - sensor.example_outdoor_irradiance
+#   - sensor.example_room_lux
+#   - binary_sensor.example_area_sub_presence
+#
+# DESIGN NOTES:
+#   - Single-read variables for inputs; derive everything from those.
+#   - Tiering is inside the computation (no availability gating).
+#   - No republishing raw upstream facts as attrs (no irradiance/lux attrs).
+#   - Debug attrs are present but commented out.
+#
+# CHANGELOG:
+# - 2026-01-02: Canonicalized example: generic entities, single-read vars, JSON items output,
+#   stable reason attribute, and unavailability list without Python methods.
+# - 2025-10-19: Initial example.
+################################################################################
+
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - sensor.example_outdoor_irradiance
+          - sensor.example_room_lux
+          - binary_sensor.example_area_sub_presence
+      - platform: time_pattern
+        minutes: "/15"
+
+    sensor:
+      - name: "Example Area Lighting Targets"
+        unique_id: example_area_lighting_targets
+
+        variables:
+          # --- Time bands (examples; adjust to taste) ---
+          now_minutes: "{{ (now().hour * 60) + now().minute }}"
+          is_evening: "{{ 1080 <= now_minutes < 1320 }}"         # 18:00–22:00
+          is_dark_hours: "{{ now_minutes >= 1350 or now_minutes < 360 }}"  # 22:30–06:00
+
+          # --- Inputs (safe defaults; treat unavailable as 0) ---
+          irradiance_ok: "{{ states('sensor.example_outdoor_irradiance') not in ['unknown','unavailable','none',''] }}"
+          lux_ok: "{{ states('sensor.example_room_lux') not in ['unknown','unavailable','none',''] }}"
+
+          irradiance_raw: "{{ states('sensor.example_outdoor_irradiance') | float(0) }}"
+          lux_raw: "{{ states('sensor.example_room_lux') | float(0) }}"
+
+          irradiance: >
+            {% if irradiance_ok and 0 <= irradiance_raw <= 2000 %}
+              {{ irradiance_raw }}
+            {% else %}
+              0
+            {% endif %}
+
+          lux: >
+            {% if lux_ok and 0 <= lux_raw <= 200000 %}
+              {{ lux_raw }}
+            {% else %}
+              0
+            {% endif %}
+
+          sub_area_present: "{{ is_state('binary_sensor.example_area_sub_presence', 'on') }}"
+
+          # --- Irradiance binning (coarse curves) ---
+          irr_bin: >
+            {% if irradiance < 20 %}very_low
+            {% elif irradiance < 50 %}low
+            {% elif irradiance < 150 %}low_mid
+            {% elif irradiance < 300 %}mid
+            {% else %}high
+            {% endif %}
+
+          # --- Desired lux targets (simple example) ---
+          target_lux_main: "{{ 30 if irr_bin == 'very_low' else 45 if irr_bin in ['low','low_mid'] else 60 }}"
+          target_lux_accent: 20
+
+          # --- Base brightness (percent) by irradiance bin ---
+          base_main_pct: >
+            {% if irr_bin == 'very_low' %}40
+            {% elif irr_bin == 'low' %}25
+            {% elif irr_bin == 'low_mid' %}15
+            {% elif irr_bin == 'mid' %}10
+            {% else %}0
+            {% endif %}
+
+          base_accent_pct: >
+            {% if irr_bin == 'very_low' %}5
+            {% elif irr_bin == 'low' %}3
+            {% elif irr_bin == 'low_mid' %}2
+            {% elif irr_bin == 'mid' %}1
+            {% else %}0
+            {% endif %}
+
+          # --- Delta-driven adjustment (very simple) ---
+          delta_main: "{{ (target_lux_main - lux) | int(0) }}"
+          delta_accent: "{{ (target_lux_accent - lux) | int(0) }}"
+
+          adj_main_pct: "{{ ((delta_main // 10) * 3) | int(0) }}"
+          adj_accent_pct: "{{ ((delta_accent // 15) * 1) | int(0) }}"
+
+          sub_boost_main_pct: "{{ 25 if sub_area_present else 0 }}"
+
+          # --- Calculated (pre-clamp) ---
+          main_calc_pct: >
+            {% if is_evening %}40
+            {% elif is_dark_hours %}5
+            {% else %}
+              {{ (base_main_pct | int(0)) + (adj_main_pct | int(0)) + (sub_boost_main_pct | int(0)) }}
+            {% endif %}
+
+          accent_calc_pct: >
+            {% if is_evening %}15
+            {% elif is_dark_hours %}0
+            {% else %}
+              {{ (base_accent_pct | int(0)) + (adj_accent_pct | int(0)) }}
+            {% endif %}
+
+          # --- Clamp + minimum threshold ---
+          main_raw: "{{ main_calc_pct | int(0) }}"
+          accent_raw: "{{ accent_calc_pct | int(0) }}"
+
+          main_pct: >
+            {% set v = 0 if main_raw < 3 else main_raw %}
+            {{ [0, v, 100] | sort | nth(1) }}
+
+          accent_pct: >
+            {% set v = 0 if accent_raw < 3 else accent_raw %}
+            {{ [0, v, 100] | sort | nth(1) }}
+
+          has_targets: "{{ (main_pct | int(0)) > 0 or (accent_pct | int(0)) > 0 }}"
+
+          # --- Light list (no .items()) ---
+          targets_list:
+            - light: light.example_area_main_light
+              brightness_pct: "{{ main_pct | int(0) }}"
+            - light: light.example_area_accent_light
+              brightness_pct: "{{ accent_pct | int(0) }}"
+
+          state_v: "{{ 'on' if has_targets else 'off' }}"
+
+          reason_v: >
+            {% if state_v == 'off' %}
+              No targets (all computed brightness below threshold)
+            {% elif is_dark_hours %}
+              Dark hours targets applied
+            {% elif is_evening %}
+              Evening targets applied
+            {% elif irr_bin in ['very_low','low'] %}
+              Low irradiance targets applied
+            {% else %}
+              Daytime targets applied
+            {% endif %}
+
+        state: "{{ state_v }}"
+
+        attributes:
+          reason: "{{ reason_v }}"
+          has_targets: "{{ has_targets }}"
+
+          items_json: >
+            {{ targets_list | to_json }}
+
+          unavailable_entities: >
+            {% set ns = namespace(u=[]) %}
+            {% for it in targets_list %}
+              {% set eid = it.light %}
+              {% set st = states(eid) %}
+              {% if st in ['unknown','unavailable','none',''] %}
+                {% set ns.u = ns.u + [eid] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.u }}
+
+          # debug_irr_bin: "{{ irr_bin }}"
+          # debug_is_evening: "{{ is_evening }}"
+          # debug_is_dark_hours: "{{ is_dark_hours }}"
+          # debug_main_pct: "{{ main_pct }}"
+          # debug_accent_pct: "{{ accent_pct }}"
+
+
+################################################################################
+# AUTOMATION – EXAMPLE AREA LIGHTS (PRESENCE-DRIVEN, CANONICAL)
+################################################################################
+
+alias: Automation – Example Area Lights Follow Presence
+description: >
+  Presence-driven area lighting using a centralized targets sensor and apply scripts.
+  Trigger-level `for:` provides OFF stickiness; manual override wins.
+
+  CHANGELOG:
+  - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - alias: Presence detected (occupied)
+    id: presence_on
+    trigger: state
+    entity_id: binary_sensor.example_area_presence
+    to: "on"
+
+  - alias: Presence cleared (unoccupied, held by irradiance/night)
+    id: presence_off
+    trigger: state
+    entity_id: binary_sensor.example_area_presence
+    to: "off"
+    for:
+      seconds: >-
+        {% set irr = states('sensor.example_outdoor_irradiance') | float(0) %}
+        {% set night = now().hour >= 22 or now().hour < 6 %}
+        {% if night %} 10
+        {% elif irr <= 50 %} 45
+        {% elif irr <= 300 %} 30
+        {% else %} 10
+        {% endif %}
+
+  - alias: Targets changed (recompute/apply while occupied)
+    id: targets_changed
+    trigger: state
+    entity_id: sensor.example_area_lighting_targets
+
+  - alias: Light state/brightness changed (manual override detection)
+    id: light_changed
+    trigger: state
+    entity_id: light.example_area_main_light
+
+  - alias: Daily reset
+    id: daily_reset
+    trigger: time
+    at: "05:00:00"
+
+  - alias: Post-restart gate (non-critical)
+    id: startup_noncritical
+    trigger: state
+    entity_id: timer.ha_startup_delay
+    from: active
+    to: idle
+    for:
+      seconds: "{{ range(45, 76) | random }}"
+
+actions:
+  - alias: Resolve decision inputs once
+    variables:
+      manual_override_global: "{{ is_state('input_boolean.manual_override', 'on') }}"
+
+      override_helper: input_text.example_area_light_override
+      override_val: "{{ states(override_helper) }}"
+      override_active: "{{ override_val not in ['unknown','unavailable','none',''] and (override_val | trim) != '' }}"
+
+      presence_on_now: "{{ is_state('binary_sensor.example_area_presence', 'on') }}"
+
+      targets_state: "{{ states('sensor.example_area_lighting_targets') }}"
+      raw_items: "{{ state_attr('sensor.example_area_lighting_targets', 'items_json') | default('[]', true) }}"
+      decoded_items: "{{ raw_items | from_json }}"
+      targets_items: "{{ decoded_items if (decoded_items is sequence and decoded_items is not string) else [] }}"
+
+      desired_main_pct: >-
+        {% set ns = namespace(v=none) %}
+        {% for it in targets_items %}
+          {% if it is mapping and it.light is defined and it.light == 'light.example_area_main_light' %}
+            {% set ns.v = it.brightness_pct | int(0) %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.v if ns.v is not none else 0 }}
+
+      desired_main_bri: "{{ ((desired_main_pct | int(0)) * 255 / 100) | round(0) | int(0) | min(255) }}"
+      actual_main_bri: "{{ state_attr('light.example_area_main_light', 'brightness') | int(0) }}"
+      actual_main_state: "{{ states('light.example_area_main_light') }}"
+
+      bri_tol: 5
+      brightness_mismatch: "{{ actual_main_state == 'on' and ((actual_main_bri - desired_main_bri) | abs > bri_tol) }}"
+
+      last_apply_iso: "{{ states('input_datetime.example_area_last_auto_apply') }}"
+      last_apply_dt: "{{ last_apply_iso | as_datetime | default(none) }}"
+      last_apply_age_s: >-
+        {% if last_apply_dt %}
+          {{ (as_timestamp(now()) - as_timestamp(last_apply_dt)) | int(999999) }}
+        {% else %}
+          999999
+        {% endif %}
+
+  - alias: Decision tree (manual override first)
+    if:
+      - alias: Global manual override is ON
+        condition: template
+        value_template: "{{ manual_override_global }}"
+    then:
+      - alias: Global manual override active – stop
+        stop: "Global manual override"
+
+    elif:
+      - alias: Daily reset fired
+        condition: trigger
+        id: daily_reset
+    then:
+      - alias: Clear per-area override on daily reset
+        action: input_text.set_value
+        target:
+          entity_id: "{{ override_helper }}"
+        data:
+          value: ""
+
+    elif:
+      - alias: Detect manual override (ignore shortly after automation apply)
+        condition: template
+        value_template: >
+          {{ trigger.id == 'light_changed'
+             and presence_on_now
+             and targets_state == 'on'
+             and (targets_items | length) > 0
+             and not override_active
+             and brightness_mismatch
+             and last_apply_age_s > 15 }}
+    then:
+      - alias: Set per-area override helper
+        action: input_text.set_value
+        target:
+          entity_id: "{{ override_helper }}"
+        data:
+          value: "user_adjusted_{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    elif:
+      - alias: Presence ON and targets on; apply if not overridden
+        condition: template
+        value_template: >
+          {{ presence_on_now
+             and targets_state == 'on'
+             and (targets_items | length) > 0
+             and not override_active
+             and trigger.id in ['presence_on','targets_changed','startup_noncritical'] }}
+    then:
+      - alias: Stamp last automation apply time
+        action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.example_area_last_auto_apply
+        data:
+          datetime: "{{ now().isoformat() }}"
+
+      - alias: Apply lighting via centralized script
+        action: script.turn_on
+        target:
+          entity_id: script.set_lights_brightness
+        data:
+          variables:
+            manual_override_helper: "{{ override_helper }}"
+            items: "{{ targets_items }}"
+            transition: 1.5
+
+    elif:
+      - alias: Presence OFF held and fired
+        condition: trigger
+        id: presence_off
+    then:
+      - alias: Clear per-area override when area vacates
+        action: input_text.set_value
+        target:
+          entity_id: "{{ override_helper }}"
+        data:
+          value: ""
+      - alias: Turn off area lights
+        action: script.turn_on
+        target:
+          entity_id: script.utility_turn_off_if_on_and_not_manually_activated
+        data:
+          variables:
+            manual_override_helper: "{{ override_helper }}"
+            items:
+              - entity: light.example_area_main_light
+              - entity: light.example_area_accent_light
+            transition: 2
+
+    else:
+      - alias: No action needed – stop
+        stop: "No applicable condition"

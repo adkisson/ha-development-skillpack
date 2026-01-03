@@ -1,0 +1,251 @@
+################################################################################
+# EXAMPLE: Template Sensor with Graceful Integration Degradation
+#
+# This sensor demonstrates best practices for handling external API failures:
+# - Loose gating via tier selection (avoid cascading unavailability)
+# - Safe defaults when upstream missing
+# - `data_quality` + `reasoning` attributes for transparency
+# - Age tracking for staleness detection
+# - Downstream automation that respects degradation state
+# - Degradation represented in state/attributes, not availability flag
+#
+# SCENARIO: Status sensor depending on cloud API (moderate–high reliability).
+# External API may be unavailable due to auth expiration, rate limits, or maintenance.
+# Sensor degrades gracefully to last-known/safe values instead of going unavailable.
+#
+# APPLIES: /patterns/integration_degradation.md
+#
+# CHANGELOG:
+# - 20260102-1200: Canonical example for graceful integration degradation with
+#   safe defaults, tier-based fallback, staleness detection, and per-tier actions.
+#   Demonstrates loose availability gates, observability attributes, and downstream
+#   automation that respects degradation state.
+#
+# USED BY:
+# - automation: "Directive: Respect Degradation" (downstream dispatcher)
+# - Canonical reference in: /patterns/integration_degradation.md
+#
+################################################################################
+
+template:
+  - trigger:
+      - platform: state
+        entity_id: sensor.primary_external_source
+      - platform: state
+        entity_id: binary_sensor.local_proxy_witness
+      - platform: time_pattern
+        minutes: "/5"
+
+    sensor:
+      - name: "Directive with Graceful Degradation"
+        unique_id: directive_with_degradation
+        # deps: sensor.primary_external_source, binary_sensor.local_proxy_witness, input_boolean.manual_override
+
+        variables:
+          # === RAW INPUTS (keep raw separate from computed safe default) ===
+          primary_raw: "{{ states('sensor.primary_external_source') }}"
+          primary_value_safe: >
+            {% if has_value('sensor.primary_external_source') %}
+              {{ states('sensor.primary_external_source') | float(0) }}
+            {% else %}
+              0
+            {% endif %}
+
+          # === PROXY CHECK (must use is_state, not has_value for binary_sensor) ===
+          # has_value() is true for both 'on' and 'off'; we only want 'on'
+          proxy_available: "{{ is_state('binary_sensor.local_proxy_witness','on') }}"
+
+          # === AGE CALCULATION (staleness detection) ===
+          # Use entity last_updated (always available), not upstream attribute
+          # Note: last_updated reflects any update; use last_changed if you only care about state changes.
+          primary_last_updated: "{{ states['sensor.primary_external_source'].last_updated if states['sensor.primary_external_source'] is not none else none }}"
+          primary_age_s: >
+            {% if primary_last_updated %}
+              {{ (as_timestamp(now()) - as_timestamp(primary_last_updated)) | int(999999) }}
+            {% else %}
+              999999
+            {% endif %}
+
+          stale_threshold_s: 300  # 5 minutes
+          is_stale: "{{ primary_age_s > stale_threshold_s }}"
+
+          # === AVAILABILITY CHECK (loose OR gate) ===
+          # Prefer keeping sensor available with degraded data_quality
+          # Only gate on truly critical data
+          primary_available: "{{ has_value('sensor.primary_external_source') and not is_stale }}"
+
+          # === ACTIVE TIER (which source is in use) ===
+          active_tier: >
+            {% if primary_available %}
+              primary
+            {% elif proxy_available %}
+              proxy
+            {% else %}
+              default
+            {% endif %}
+
+          # === SOURCE ENTITY (for transparency) ===
+          source_entity: >
+            {% if active_tier == 'primary' %}
+              sensor.primary_external_source
+            {% elif active_tier == 'proxy' %}
+              binary_sensor.local_proxy_witness
+            {% else %}
+              (safe_default)
+            {% endif %}
+
+          # === DATA QUALITY (combines unavailability + staleness) ===
+          data_quality: >
+            {% if active_tier == 'primary' %}
+              fully_operational
+            {% elif active_tier == 'proxy' %}
+              degraded_using_proxy_witness
+            {% elif is_stale and has_value('sensor.primary_external_source') %}
+              primary_present_but_stale
+            {% else %}
+              degraded_safe_default
+            {% endif %}
+
+          # === REASONING (human + automation readable) ===
+          reasoning: >
+            {% if data_quality == 'fully_operational' %}
+              Primary source operational (age: {{ primary_age_s }}s)
+            {% elif data_quality == 'primary_present_but_stale' %}
+              ⚠️ Primary present but stale (age: {{ primary_age_s }}s); not trusted
+            {% elif data_quality == 'degraded_using_proxy_witness' %}
+              ⚠️ Primary source unavailable; using proxy witness (coarse-grained only)
+            {% else %}
+              ❌ Primary and proxy unavailable; using safe default
+            {% endif %}
+
+          # === STATE DETERMINATION ===
+          state_v: >
+            {% if active_tier == 'primary' %}
+              ready
+            {% elif active_tier == 'proxy' %}
+              degraded
+            {% else %}
+              no_data
+            {% endif %}
+
+        state: "{{ state_v }}"
+
+        attributes:
+          # === SCHEMA & VERSIONING ===
+          schema_version: 1
+
+          # === DATA QUALITY & SOURCE TRACKING ===
+          active_tier: "{{ active_tier }}"
+          source_entity: "{{ source_entity }}"
+          data_quality: "{{ data_quality }}"
+          age_s: "{{ primary_age_s | int(999999) }}"
+          is_stale: "{{ is_stale }}"
+          reasoning: "{{ reasoning }}"
+
+          # === PRIMARY VALUES (raw and safe-default computed) ===
+          primary_raw: "{{ primary_raw }}"
+          primary_value_safe: "{{ primary_value_safe }}"
+
+          # === EFFECTIVE VALUE (coalesced outcome for downstream use) ===
+          # Demonstrates how consumers would use the tier-based selection
+          effective_value: >
+            {# Example placeholder mapping; replace with domain-specific logic #}
+            {% if active_tier == 'primary' %}
+              {{ primary_value_safe }}
+            {% elif active_tier == 'proxy' %}
+              1
+            {% else %}
+              0
+            {% endif %}
+
+          # === DOWNSTREAM DECISION SUPPORT ===
+          # Automations check this before critical actions
+          eligible_for_action: >
+            {{ (active_tier in ['primary', 'proxy'])
+               or is_state('input_boolean.manual_override', 'on') }}
+
+        icon: >
+          {% if data_quality == 'fully_operational' %}
+            mdi:check-circle
+          {% elif data_quality in ['primary_present_but_stale', 'degraded_using_proxy_witness'] %}
+            mdi:alert-circle
+          {% else %}
+            mdi:close-circle
+          {% endif %}
+
+################################################################################
+# DOWNSTREAM AUTOMATION: Respect degradation state before critical actions
+################################################################################
+
+alias: "Directive: Respect Degradation"
+description: >
+  Executes a critical action only when data quality permits, with proxy fallback and
+  manual override escape hatch. Skipped paths are silent by design.
+
+  CHANGELOG:
+  - 20260102-1200: Canonical example for graceful integration degradation.
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - alias: "Directive changed"
+    id: directive_changed
+    trigger: state
+    entity_id: sensor.directive_with_degradation
+
+actions:
+  - alias: "Read directive facts once"
+    variables:
+      directive_state: "{{ states('sensor.directive_with_degradation') }}"
+      dq: "{{ state_attr('sensor.directive_with_degradation', 'data_quality') | default('none', true) }}"
+      tier: "{{ state_attr('sensor.directive_with_degradation', 'active_tier') }}"
+      reasoning: "{{ state_attr('sensor.directive_with_degradation', 'reasoning') }}"
+
+  - alias: "Route decision (mutually exclusive)"
+    if:
+      - alias: "Manual override ON"
+        condition: state
+        entity_id: input_boolean.manual_override
+        state: "on"
+    then:
+      - alias: "Manual override: execute full action"
+        action: script.turn_on
+        target:
+          entity_id: script.some_critical_action
+
+    elif:
+      - alias: "Directive ready + primary operational"
+        condition: template
+        value_template: >
+          {{ directive_state == 'ready'
+             and dq == 'fully_operational' }}
+    then:
+      - alias: "Primary operational: execute full action"
+        action: script.turn_on
+        target:
+          entity_id: script.some_critical_action
+
+    elif:
+      - alias: "Directive degraded + proxy witness"
+        condition: template
+        value_template: >
+          {{ directive_state == 'degraded'
+             and dq == 'degraded_using_proxy_witness' }}
+    then:
+      - alias: "Proxy witness active – stop"
+        stop: "Sample: reduced/skipped action (could call script/notify/etc.)"
+
+    elif:
+      - alias: "Directive degraded + primary stale (no proxy)"
+        condition: template
+        value_template: >
+          {{ directive_state == 'degraded'
+             and dq == 'primary_present_but_stale' }}
+    then:
+      - alias: "Primary stale – stop"
+        stop: "Primary stale and no proxy"
+
+    else:
+      - alias: "No reliable directive – stop"
+        stop: "No reliable data"

@@ -1,0 +1,65 @@
+################################################################################
+# LIGHTING DIRECTIVE – EXAMPLE (TEMPLATE SENSOR)
+#
+# PURPOSE:
+#   Emits a simple directive ("on" vs "hold") based on an indoor illuminance
+#   reading, with a non-critical post-restart stagger gate.
+#
+# STATES:
+#   - on:   Indoor lux below threshold (room is considered dark)
+#   - hold: Indoor lux at/above threshold (no action needed)
+#
+# INPUTS (replace with your real entities):
+#   - sensor.example_indoor_lux
+#   - sensor.example_outdoor_irradiance
+#   - timer.ha_startup_delay
+#
+# DESIGN NOTES:
+#   - Single-read variables: compute lux once, derive state/reason from it.
+#   - Restart-friendly: re-evaluate once after startup delay clears (staggered).
+#   - Explainability: keep the state minimal; put "why" in a single `reason` attr.
+#   - Debug-ready: optional debug_* attrs are present but commented out.
+#
+# CHANGELOG:
+# - 2026-01-02: Canonicalized generic example (entities + header + single-read vars).
+# - 2025-10-22: Added HA restart stagger gate on trigger.
+# - 2025-10-19: Initial example.
+################################################################################
+template:
+  - trigger:
+      # Indoor lux changed
+      - platform: state
+        entity_id: sensor.example_indoor_lux
+      # Outdoor irradiance changed
+      - platform: state
+        entity_id: sensor.example_outdoor_irradiance
+      # HA startup gate (non-critical, 45–75s stagger)
+      - platform: state
+        entity_id: timer.ha_startup_delay
+        from: active
+        to: idle
+        for:
+          seconds: "{{ range(45, 75) | random }}"
+    sensor:
+      - name: "Lighting Directive – Example"
+        unique_id: lighting_directive_example
+        variables:
+          lux: "{{ states('sensor.example_indoor_lux') | float(0) }}"
+          threshold_lux: 40
+          state_v: >-
+            {% if lux < threshold_lux %}
+              on
+            {% else %}
+              hold
+            {% endif %}
+          reason_v: >-
+            {% if state_v == 'on' %}
+              Indoor lux below threshold
+            {% else %}
+              Indoor lux at/above threshold
+            {% endif %}
+        state: "{{ state_v }}"
+        attributes:
+          reason: "{{ reason_v }}"
+          # debug_lux: "{{ lux }}"
+          # debug_threshold_lux: "{{ threshold_lux }}"
