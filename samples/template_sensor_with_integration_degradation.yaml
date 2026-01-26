@@ -1,6 +1,21 @@
 ################################################################################
 # EXAMPLE: Template Sensor with Graceful Integration Degradation
 #
+# SCOPE: Complex, multi-tier directive sensors (energy management, arbitration,
+# multi-source aggregation). VERY UNLIKELY to be required for most template sensors.
+# Only apply when ALL of the following are true:
+#   • Sensor depends on external APIs (cloud, network) with real failure modes
+#   • Multiple fallback sources exist (primary + proxy + safe default)
+#   • Downstream automations must respect degradation (can't silently degrade)
+#   • Visibility into data quality/staleness is operationally critical
+#
+# VALIDATION: Template logic MUST be validated in Home Assistant Developer Tools
+# (Developer Tools > Templates) before production use. Test all variable paths,
+# edge cases (missing entities, stale data), and state transitions.
+#
+# ORGANIZATION: Most template sensors live in !included directories for clarity
+# (e.g., templates/sensors/); a few complex ones may reside in packages.
+#
 # This sensor demonstrates best practices for handling external API failures:
 # - Loose gating via tier selection (avoid cascading unavailability)
 # - Safe defaults when upstream missing
@@ -19,7 +34,7 @@
 # - 20260102-1200: Canonical example for graceful integration degradation with
 #   safe defaults, tier-based fallback, staleness detection, and per-tier actions.
 #   Demonstrates loose availability gates, observability attributes, and downstream
-#   automation that respects degradation state.
+#   automation that respects degradation state. YAML syntax current as of 2026.1.x.
 #
 # USED BY:
 # - automation: "Directive: Respect Degradation" (downstream dispatcher)
@@ -28,12 +43,12 @@
 ################################################################################
 
 template:
-  - trigger:
-      - platform: state
+  - triggers:
+      - trigger: state
         entity_id: sensor.primary_external_source
-      - platform: state
+      - trigger: state
         entity_id: binary_sensor.local_proxy_witness
-      - platform: time_pattern
+      - trigger: time_pattern
         minutes: "/5"
 
     sensor:
@@ -184,6 +199,7 @@ description: >
 
   CHANGELOG:
   - 20260102-1200: Canonical example for graceful integration degradation.
+    YAML syntax current as of 2026.1.x.
 
 mode: single
 max_exceeded: silent

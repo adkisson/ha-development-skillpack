@@ -1,6 +1,14 @@
 ################################################################################
 # FRIDGE PRECOOL DIRECTIVE (TEMPLATE SENSOR)
 #
+# ORGANIZATION: This example uses a `template:` block. Whether you need it depends
+# on your include context:
+#   * If configuration.yaml has `template: !include templates.yaml`, then templates.yaml
+#     should NOT have `template:` (it should be the list items directly).
+#   * If you include a full file/package that defines top-level keys, it MUST include
+#     `template:` as a top-level key.
+# See your configuration includes to determine which applies.
+#
 # PURPOSE:
 #   Determines whether the fridge precool routine should execute, based on
 #   allocator permission, pause/override state, and an active chill timer.
@@ -23,15 +31,13 @@
 #   - timer.fridge_chill
 #
 # CHANGELOG:
-# - 2026-01-02: Canonicalized per attribute rules (reason-only attributes,
-#   safe defaults, no raw-fact republishing, no schema versioning).
-# - 2025-10-22: Added reason mapping and simplified branches.
-# - 2025-10-18: Initial sample.
+# - 20260102-1200: Canonicalized per attribute rules. YAML syntax current as of 2026.1.x.
+# - 20251022-1430: Added reason mapping and simplified branches.
+# - 20251018-0900: Initial sample.
 ################################################################################
-
 template:
-  - trigger:
-      - platform: state
+  - triggers:
+      - trigger: state
         entity_id:
           - sensor.power_budget_allocator
           - input_boolean.fridge_cloudburst_pause
@@ -40,14 +46,14 @@ template:
     sensor:
       - name: "Fridge Precool Directive"
         unique_id: fridge_precool_directive
+        # deps: sensor.power_budget_allocator, input_boolean.fridge_cloudburst_pause, timer.fridge_chill
 
         variables:
           allowed: >-
             {{ state_attr('sensor.power_budget_allocator', 'fridge_precool_allowed')
-               | default(false) | bool }}
+               | default(false, true) | bool }}
           paused: "{{ is_state('input_boolean.fridge_cloudburst_pause', 'on') }}"
           cooling_active: "{{ is_state('timer.fridge_chill', 'active') }}"
-
           state_v: >-
             {% if allowed and (not paused) and (not cooling_active) %}
               execute_precool
@@ -56,7 +62,6 @@ template:
             {% else %}
               hold
             {% endif %}
-
           reason_v: >-
             {% if state_v == 'execute_precool' %}
               Allowed; not paused; chill timer inactive
@@ -70,7 +75,6 @@ template:
 
         attributes:
           reason: "{{ reason_v }}"
-
           # debug_allowed: "{{ allowed }}"
           # debug_paused: "{{ paused }}"
           # debug_cooling_active: "{{ cooling_active }}"

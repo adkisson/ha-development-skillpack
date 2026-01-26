@@ -5,8 +5,8 @@ description: >
   escape hatch. Skipped paths are silent by design.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
-  - 2025-10-22: Initial sample using central safe-apply script.
+  - 20260102-1430: Canonicalized example. Verified on HA 2025.12+.
+  - 20251022-1200: Initial sample using central safe-apply script.
 
 mode: single
 max_exceeded: silent

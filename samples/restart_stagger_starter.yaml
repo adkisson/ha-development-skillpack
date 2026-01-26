@@ -8,13 +8,13 @@ description: >
   prioritize perimeter/life-safety.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
+  - 20260102-1620: Canonicalized example. Verified on HA 2025.12+.
     Uses trigger-level `for:` only (no action delays), randomized non-critical
     stagger to prevent thundering herd, and explicit critical vs non-critical
     recovery paths.
-  - 2025-10-22: Introduced split recovery gates: critical (7s fixed) vs
+  - 20251022-1100: Introduced split recovery gates: critical (7s fixed) vs
     non-critical (45–75s randomized) using trigger-level `for:`.
-  - 2025-10-18: Initial sample.
+  - 20251018-1200: Initial sample.
 
 
 mode: single

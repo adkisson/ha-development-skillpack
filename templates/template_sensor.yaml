@@ -1,78 +1,89 @@
 ##########
 # Template Sensor – Brains Scaffold (CANONICAL)
 #
+# ORGANIZATION: This example uses a `template:` block. Whether you need it depends
+# on your include context:
+#   * If configuration.yaml has `template: !include templates.yaml`, then templates.yaml
+#     should NOT have `template:` (it should be the list items directly).
+#   * If you include a full file/package that defines top-level keys, it MUST include
+#     `template:` as a top-level key.
+# See your configuration includes to determine which applies.
+#
 # PURPOSE:
 #   Encapsulates business logic and emits a clear directive that automations/scripts consume.
 #   Keep actions out of templates; this is computation only.
-#   Single-read variables ensure consistency; derived attributes support decision-making.
+#   Single-read variables ensure consistency; state is atomic; `reason` attribute explains "why".
 #
 # CHANGELOG:
-# - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+# - 20260102-1200: Canonical brains scaffold example. YAML syntax current as of 2026.1.x.
 ##########
-
 template:
-  - trigger:
+  - triggers:
       # Re-evaluate when any dependency changes (add/remove as needed)
-      - platform: state
+      - trigger: state
         entity_id:
           - sensor.solar_export_3m_avg
           - sensor.energy_buy_rate
           - sensor.wholesale_solar_sell_price
           - input_boolean.house_sitter_mode
-
       # Re-evaluate after HA startup (fast bootstrap) + after startup delay (staged boot)
-      - platform: homeassistant
+      - trigger: homeassistant
         event: start
-
-      - platform: state
+      - trigger: state
         entity_id: timer.ha_startup_delay
+        from: active
         to: idle
+
+    variables:
+      # Single-read inputs (raw)
+      export_w_raw: "{{ states('sensor.solar_export_3m_avg') }}"
+      buy_rate_raw: "{{ states('sensor.energy_buy_rate') }}"
+      sell_rate_raw: "{{ states('sensor.wholesale_solar_sell_price') }}"
+      sitter_mode: "{{ is_state('input_boolean.house_sitter_mode', 'on') }}"
+
+      # Typed inputs (canonical: always use these for comparisons/math)
+      export_w: "{{ export_w_raw | float(0) }}"
+      buy_rate: "{{ buy_rate_raw | float(0) }}"
+      sell_rate: "{{ sell_rate_raw | float(0) }}"
+
+      # Availability check (single source of truth to prevent drift)
+      inputs_ok: >-
+        {{ has_value('sensor.solar_export_3m_avg')
+           and has_value('sensor.energy_buy_rate')
+           and has_value('sensor.wholesale_solar_sell_price') }}
+
+      # Derived decision logic (example thresholds; tune to your system)
+      state_v: >-
+        {% if inputs_ok and export_w <= -1200 and sell_rate < buy_rate and not sitter_mode %}
+          execute_discretionary
+        {% elif inputs_ok and (export_w > 100 or sell_rate >= (buy_rate * 1.5)) %}
+          conserve
+        {% else %}
+          hold
+        {% endif %}
+
+      # Reason for current state (human-readable explanation)
+      reason_v: >-
+        {% if state_v == 'execute_discretionary' %}
+          Surplus available and selling disadvantage
+        {% elif state_v == 'conserve' %}
+          Grid import or export premium
+        {% elif not inputs_ok %}
+          Missing sensor data; holding
+        {% else %}
+          Neutral conditions
+        {% endif %}
 
     sensor:
       - name: "Energy Dispatch Directive"
         unique_id: energy_dispatch_directive
-
-        variables:
-          # Single-read inputs (raw)
-          export_w_raw: "{{ states('sensor.solar_export_3m_avg') }}"
-          buy_rate_raw: "{{ states('sensor.energy_buy_rate') }}"
-          sell_rate_raw: "{{ states('sensor.wholesale_solar_sell_price') }}"
-          sitter_mode: "{{ is_state('input_boolean.house_sitter_mode', 'on') }}"
-
-          # Typed inputs (canonical: always use these for comparisons/math)
-          export_w: "{{ export_w_raw | float(0) }}"
-          buy_rate: "{{ buy_rate_raw | float(0) }}"
-          sell_rate: "{{ sell_rate_raw | float(0) }}"
-
-          # Derived decision logic (example thresholds; tune to your system)
-          state_v: >
-            {% if export_w <= -1200 and sell_rate < buy_rate and not sitter_mode %}
-              execute_discretionary
-            {% elif export_w > 100 or sell_rate >= (buy_rate * 1.5) %}
-              conserve
-            {% else %}
-              hold
-            {% endif %}
-
-          # Reason for current state (human-readable explanation)
-          reason_v: >
-            {% if state_v == 'execute_discretionary' %}
-              Surplus available and selling disadvantage
-            {% elif state_v == 'conserve' %}
-              Grid import or export premium
-            {% else %}
-              Neutral conditions
-            {% endif %}
+        # deps: sensor.solar_export_3m_avg, sensor.energy_buy_rate, sensor.wholesale_solar_sell_price, input_boolean.house_sitter_mode, timer.ha_startup_delay
 
         state: "{{ state_v }}"
 
         attributes:
           reason: "{{ reason_v }}"
-          export_w: "{{ export_w }}"
-          buy_rate: "{{ buy_rate }}"
-          sell_rate: "{{ sell_rate }}"
-          sitter_mode: "{{ sitter_mode }}"
-          # Optional: raw visibility for debugging without needing to uncomment multiple lines later
-          # export_w_raw: "{{ export_w_raw }}"
-          # buy_rate_raw: "{{ buy_rate_raw }}"
-          # sell_rate_raw: "{{ sell_rate_raw }}"
+          # debug_export_w: "{{ export_w }}"
+          # debug_buy_rate: "{{ buy_rate }}"
+          # debug_sell_rate: "{{ sell_rate }}"
+          # debug_sitter_mode: "{{ sitter_mode }}"

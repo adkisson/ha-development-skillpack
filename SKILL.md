@@ -5,12 +5,13 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.0
+**Version:** 0.4.1
 **Maintainers:** Rob
 
 ## Changelog
-
-**v0.4.0** (2026-01-02)
+**v0.4.1** (20260126-1430)
+- **Updated examples**: ensured that all examples used current, valid YAML and the correct date format
+**v0.4.0** (20260102-1200)
 - **Conditional control flow**: Formalized `choose` vs `if/elif/else` rule. Use `choose` only for 100% mutually exclusive branches; use `if/elif/else` when conditions overlap or precedence matters.
 - **Comments policy**: Reinforced that comments belong only in template sensors (`# deps:`, `# verified:`); automations use `alias:` and `description:` exclusively.
 - **Trigger coverage**: Ensured all trigger states are reachable (no dead code branches); validate downstream action can handle all trigger states.

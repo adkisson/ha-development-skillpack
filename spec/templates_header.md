@@ -2,7 +2,7 @@
 
 Every YAML must include:
 - `alias:` (human‑readable title) and `description:` (purpose + key decisions).
-- A concise **CHANGELOG** block (commented or within description) with dates.
+- A concise **CHANGELOG** block (commented or within description) with dates (most recent first, using format YYYYMMDD-HHMM for Pacific timezone)
 - Dependencies list in comments if relevant (`input_boolean.*`, `timer.*`, `sensor.*`).
 - “Last verified on HA <version>” comment.
 
@@ -14,9 +14,9 @@ description: >
   Subtle wave effect for evenings; minimal chatter; idempotent guard applied.
   #
   # CHANGELOG:
-  # - 2025-10-22: Debounce and restart gate tuned. Verified HA 2025.10.
+  # - 20251022-1200: Debounce and restart gate tuned. 
 # deps: input_boolean.evening_mode, light.porch_group
-# verified: HA 2025.10.x
+
 ```
 
 - Include an `alias:` at top-level **and** inside every trigger, condition, and action block to improve traces and diffs.

@@ -149,8 +149,8 @@ reasoning: >
 Without delays, sources flap between tiers during intermittent outages. Add promotion/demotion delays:
 
 ```yaml
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: sensor.primary_external_source
     to: unavailable
     for: "00:00:05"  # Don't degrade until primary is *really* down

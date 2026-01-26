@@ -4,9 +4,9 @@ description: >
   Triggers on directive change and a non-critical post-start gate.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized example. Verified on HA 2025.12+.
-  - 2025-10-22: Introduced non-critical randomized trigger gate; queued fan-outs via script.
-  - 2025-10-19: Initial sample.
+  - 20260102-1530: Canonicalized example. Verified on HA 2025.12+.
+  - 20251022-1100: Introduced non-critical randomized trigger gate; queued fan-outs via script.
+  - 20251019-1200: Initial sample.
 
 mode: queued
 max: 3

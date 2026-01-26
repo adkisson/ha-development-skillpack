@@ -1,6 +1,14 @@
 ################################################################################
 # EXAMPLE AREA LIGHTING TARGETS – TEMPLATE SENSOR (CANONICAL)
 #
+# ORGANIZATION: This example uses a `template:` block. Whether you need it depends
+# on your include context:
+#   * If configuration.yaml has `template: !include templates.yaml`, then templates.yaml
+#     should NOT have `template:` (it should be the list items directly).
+#   * If you include a full file/package that defines top-level keys, it MUST include
+#     `template:` as a top-level key.
+# See your configuration includes to determine which applies.
+#
 # PURPOSE:
 #   Computes desired lighting targets (0–100%) for an example area based on:
 #   - Indoor lux (room illuminance)
@@ -28,24 +36,25 @@
 #   - Debug attrs are present but commented out.
 #
 # CHANGELOG:
-# - 2026-01-02: Canonicalized example: generic entities, single-read vars, JSON items output,
-#   stable reason attribute, and unavailability list without Python methods.
-# - 2025-10-19: Initial example.
+# - 20260102-1200: Canonical example with generic entities, single-read vars, JSON items
+#   output, stable reason attribute. YAML syntax current as of 2026.1.x.
+# - 20251019-1400: Initial example.
 ################################################################################
 
 template:
-  - trigger:
-      - platform: state
+  - triggers:
+      - trigger: state
         entity_id:
           - sensor.example_outdoor_irradiance
           - sensor.example_room_lux
           - binary_sensor.example_area_sub_presence
-      - platform: time_pattern
+      - trigger: time_pattern
         minutes: "/15"
 
     sensor:
       - name: "Example Area Lighting Targets"
         unique_id: example_area_lighting_targets
+        # deps: sensor.example_outdoor_irradiance, sensor.example_room_lux, binary_sensor.example_area_sub_presence
 
         variables:
           # --- Time bands (examples; adjust to taste) ---
@@ -54,25 +63,15 @@ template:
           is_dark_hours: "{{ now_minutes >= 1350 or now_minutes < 360 }}"  # 22:30–06:00
 
           # --- Inputs (safe defaults; treat unavailable as 0) ---
-          irradiance_ok: "{{ states('sensor.example_outdoor_irradiance') not in ['unknown','unavailable','none',''] }}"
-          lux_ok: "{{ states('sensor.example_room_lux') not in ['unknown','unavailable','none',''] }}"
+          irradiance_ok: "{{ has_value('sensor.example_outdoor_irradiance') }}"
+          lux_ok: "{{ has_value('sensor.example_room_lux') }}"
 
           irradiance_raw: "{{ states('sensor.example_outdoor_irradiance') | float(0) }}"
           lux_raw: "{{ states('sensor.example_room_lux') | float(0) }}"
 
-          irradiance: >
-            {% if irradiance_ok and 0 <= irradiance_raw <= 2000 %}
-              {{ irradiance_raw }}
-            {% else %}
-              0
-            {% endif %}
+          irradiance: "{{ irradiance_raw if (irradiance_ok and 0 <= irradiance_raw <= 2000) else 0 }}"
 
-          lux: >
-            {% if lux_ok and 0 <= lux_raw <= 200000 %}
-              {{ lux_raw }}
-            {% else %}
-              0
-            {% endif %}
+          lux: "{{ lux_raw if (lux_ok and 0 <= lux_raw <= 200000) else 0 }}"
 
           sub_area_present: "{{ is_state('binary_sensor.example_area_sub_presence', 'on') }}"
 
@@ -136,11 +135,11 @@ template:
 
           main_pct: >
             {% set v = 0 if main_raw < 3 else main_raw %}
-            {{ [0, v, 100] | sort | nth(1) }}
+            {{ [100, [0, v] | max] | min }}
 
           accent_pct: >
             {% set v = 0 if accent_raw < 3 else accent_raw %}
-            {{ [0, v, 100] | sort | nth(1) }}
+            {{ [100, [0, v] | max] | min }}
 
           has_targets: "{{ (main_pct | int(0)) > 0 or (accent_pct | int(0)) > 0 }}"
 
@@ -201,9 +200,11 @@ alias: Automation – Example Area Lights Follow Presence
 description: >
   Presence-driven area lighting using a centralized targets sensor and apply scripts.
   Trigger-level `for:` provides OFF stickiness; manual override wins.
+  Manual override detection watches main light only; accent adjustments are not tracked.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+  - 20260102-1200: Canonical example for presence-driven area lighting.
+    YAML syntax current as of 2026.1.x.
 
 mode: single
 max_exceeded: silent
@@ -333,7 +334,7 @@ actions:
         target:
           entity_id: "{{ override_helper }}"
         data:
-          value: "user_adjusted_{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+          value: "user_adjusted"
 
     elif:
       - alias: Presence ON and targets on; apply if not overridden

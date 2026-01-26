@@ -1,6 +1,14 @@
 ################################################################################
 # LIGHTING DIRECTIVE – EXAMPLE (TEMPLATE SENSOR)
 #
+# ORGANIZATION: This example uses a `template:` block. Whether you need it depends
+# on your include context:
+#   * If configuration.yaml has `template: !include templates.yaml`, then templates.yaml
+#     should NOT have `template:` (it should be the list items directly).
+#   * If you include a full file/package that defines top-level keys, it MUST include
+#     `template:` as a top-level key.
+# See your configuration includes to determine which applies.
+#
 # PURPOSE:
 #   Emits a simple directive ("on" vs "hold") based on an indoor illuminance
 #   reading, with a non-critical post-restart stagger gate.
@@ -20,21 +28,25 @@
 #   - Explainability: keep the state minimal; put "why" in a single `reason` attr.
 #   - Debug-ready: optional debug_* attrs are present but commented out.
 #
+# APPLIES: /patterns/lighting_directives.md
+#
 # CHANGELOG:
-# - 2026-01-02: Canonicalized generic example (entities + header + single-read vars).
-# - 2025-10-22: Added HA restart stagger gate on trigger.
-# - 2025-10-19: Initial example.
+# - 20260102-1200: Canonical generic example. YAML syntax current as of 2026.1.x.
+# - 20251022-1430: Added HA restart stagger gate on trigger.
+# - 20251019-0900: Initial example.
 ################################################################################
 template:
-  - trigger:
+  - triggers:
       # Indoor lux changed
-      - platform: state
+      - trigger: state
         entity_id: sensor.example_indoor_lux
-      # Outdoor irradiance changed
-      - platform: state
+      # Outdoor irradiance changed (trigger failsafe: indoor lux sensor sometimes lags
+      # when clouds move overhead; irradiance trigger ensures sensor re-evaluates even
+      # if indoor lux hasn't changed enough to fire its own trigger)
+      - trigger: state
         entity_id: sensor.example_outdoor_irradiance
       # HA startup gate (non-critical, 45–75s stagger)
-      - platform: state
+      - trigger: state
         entity_id: timer.ha_startup_delay
         from: active
         to: idle
@@ -43,6 +55,7 @@ template:
     sensor:
       - name: "Lighting Directive – Example"
         unique_id: lighting_directive_example
+        # deps: sensor.example_indoor_lux, sensor.example_outdoor_irradiance, timer.ha_startup_delay
         variables:
           lux: "{{ states('sensor.example_indoor_lux') | float(0) }}"
           threshold_lux: 40
