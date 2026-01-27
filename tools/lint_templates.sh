@@ -14,6 +14,12 @@ patterns=(
   "\.format\("
   "\.total_seconds\("
   "states\.[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+"
+  "\.lower\("
+  "\.upper\("
+  "\.strip\("
+  "state_not:"
+  "\bfloat\("
+  "\bint\("
 )
 
 violations=0

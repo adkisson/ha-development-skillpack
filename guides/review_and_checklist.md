@@ -54,8 +54,8 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 ## C) Copy‑Paste Checklists
 ### Master
 - [ ] KISS & scope clear; simpler alternative considered/ruled out
-- [ ] GUI‑friendly YAML; `alias:` mandatory at all levels; `description:` at automation/script/sensor level; `id:` per trigger
-- [ ] **Comments policy**: No comments in automations/scripts (use `description:`/`alias:` only); optional `#debug_*`, `# deps:`, `# verified:` in sensors; AppDaemon comments for complex logic only
+- [ ] GUI‑friendly automation/script YAML; `alias:` mandatory at all levels; `description:` at automation/script/sensor level; `id:` per trigger
+- [ ] **Comments policy**: Automations/scripts are **comment-free YAML**; intent lives only in `alias:` and `description:`. Template sensors **must** include inline comments and commented `#debug_*` attributes. AppDaemon comments for complex logic only
 - [ ] **Startup triggers** only when post-restart actions needed (state recovery, initialization); avoid for passive automations
 - [ ] Brains vs muscles respected; scripts for fan‑outs; concurrency sane
 - [ ] Control flow safety: `if/then` wraps `choose/default` branches (prevents unwanted default execution)
@@ -65,11 +65,11 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 - [ ] String normalization: `| lower | trim`
 - [ ] Time math: `as_timestamp()` not `.total_seconds()`
 - [ ] Type safety: raw/typed variables separated; comparisons use typed with tolerance
-- [ ] Availability: `has_value()` for entity checks
+- [ ] Availability: `has_value()` for entity checks (1)
 - [ ] Event-driven preferred; if polling, ≥60s & justified
 - [ ] Fast-fail condition ordering: cheap checks first; likely failures early; expensive Jinja last
 - [ ] Chatter minimized; idempotent guards; groups/areas; rate‑limit as needed
-- [ ] Observability: `reason` attr; production logs only for significant events
+- [ ] Observability: `reason` attr when external or ambiguous inputs exist; production logs only for significant events
 - [ ] DTT probes provided; traces referenced if orchestration validated
 - [ ] Best-in-class review completed: intent clarity, implementation alignment, condition placement, network efficiency
 - [ ] Wait strategies: `wait_template` preferred; exclusion lists guard empty string; `continue_on_timeout: true` used
@@ -94,8 +94,8 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 ### Template Sensor Sub‑Checklist
 - [ ] Minimal trigger set + HA startup gate
 - [ ] Clear directive state + `reason` attribute
-- [ ] Safe reads; optional commented `#debug_…` attributes
-- [ ] Optional `# deps:` and `# verified:` comments for clarity
+- [ ] Safe reads; expected commented `#debug_…` attributes
+- [ ] Optional `# deps:` and `# verified:` documentation for clarity
 
 ### Time Math & Timezone Safety Sub-Checklist
 - [ ] Conversions explicit and consistent (`as_timestamp()` for math; `as_datetime()` only for parsing/display)
@@ -108,3 +108,7 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 ### Deterministic Execution
 - [ ] No templated randomization in critical paths (or documented as accepted tradeoff)
 - [ ] Post-restart gates use 45–75s random `for:` delay (prevents thundering herd)
+
+
+-----
+(1) If the source is known to emit blank strings, add and (states(...)|trim) != ''.

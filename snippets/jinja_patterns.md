@@ -15,13 +15,21 @@
 ```
 
 ## Existence & Availability
-**Do**
+
+**Do (idiomatic – for standard HA entities)**
 ```jinja
-{% set ok = (states('sensor.foo') not in ['unknown','unavailable','']) %}
+{% if has_value('sensor.foo') %}  {# Not unknown or unavailable #}
 ```
-**Don’t**
+
+**Do (conditional – if source emits blank strings)**
 ```jinja
-{% if has_value('sensor.foo') %}                        {# unreliable for missing entities #}
+{% if has_value('sensor.foo') and (states('sensor.foo') | trim) != '' %}
+```
+**Why:** `has_value()` is HA's official check for unknown/unavailable. For REST/MQTT sources that may emit blank strings, add the trim guard.
+
+**Don't**
+```jinja
+{% if states('sensor.foo') != 'unknown' %}  {# Misses unavailable and empty #}
 ```
 
 ## Text Normalization
