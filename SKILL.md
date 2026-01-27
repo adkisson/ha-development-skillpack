@@ -5,10 +5,15 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.1
+**Version:** 0.4.2
 **Maintainers:** Rob
 
 ## Changelog
+**v0.4.2** (20260127-1241)
+- Resolved conflicting availability guidance; standardized on `has_value()` with explicit empty-string guard for known malformed sources.
+- Canonicalized event-driven template patterns, restart gates, and non-critical startup staggering.
+- Strengthened review checklist with comment-free automation policy and mandatory debug attributes for template sensors.
+- Updated Jinja patterns and lint rules to align with Home Assistant idiomatic usage and documented safety exceptions.
 **v0.4.1** (20260126-1430)
 - **Updated examples**: ensured that all examples used current, valid YAML and the correct date format
 **v0.4.0** (20260102-1200)
