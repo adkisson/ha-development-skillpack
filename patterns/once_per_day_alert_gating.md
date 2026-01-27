@@ -136,6 +136,10 @@ alias: Violation Monitoring – Alert Once Per Day
 description: >
   Monitors violation state. Sends alert at most once per calendar day, with
   automatic re-alert if violation resolves and recurs same day.
+  
+  **CHANGELOG:**
+  - 20260127-0600: Updated with CHANGELOG
+  - 20260126-1430: Updated with YAML standards current as of version 2026.1.x
 
 triggers:
   - id: violation_changed
@@ -305,4 +309,4 @@ Use a timer (separate from datetime gating) to delay alert for N minutes, allowi
 
 ---
 
-_Last updated: 2025-12-10_4
+_Last updated: 2026-01-27

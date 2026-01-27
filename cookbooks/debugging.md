@@ -6,9 +6,9 @@
 - **Logbook/History**: sanity checks; avoid verbose production logs
 
 ## Techniques
-- Inline `reason` attribute for human diagnosis.
+- Inline `reason` attribute for human diagnosis for complex sensor logic.
 - Keep `#debug_*` attributes commented for quick enabling.
-- Use DTT snippets from the cookbook to probe computations.
+- Use DTT snippets from the cookbook to probe computations and jinja validity.
 - Validate one room/fixture at a time (binary isolation).
 - Rollback plan: timestamped YAML copies for quick bisect.
 

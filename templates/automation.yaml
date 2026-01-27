@@ -7,7 +7,7 @@ description: >
   Skipped paths are silent by design.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+  - 2026-01-02: Canonicalized.
 
 mode: single
 max_exceeded: silent

@@ -29,7 +29,7 @@
 - Minimal bounded retry; avoid chatty loops.
 
 ## 7) Observability
-- Templates expose `state` and human `reason`; keep `#debug_*` attrs commented for quick enabling.
+- Templates expose `state` and human `reason` (only when complex logic exists); keep `#debug_*` attrs commented for quick enabling.
 - Production logging is rare and meaningful; otherwise silent.
 
 ## 8) Backward Compatibility

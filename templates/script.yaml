@@ -5,7 +5,8 @@ description: >
   Guard compares desired vs actual state/brightness and skips if already correct.
 
   CHANGELOG:
-  - 2026-01-02: Canonicalized. Verified on HA 2025.12+.
+  - 20260126-1430: Canonicalized.
+  - 20260102-1200: Initial version/
 
 mode: queued
 max: 10

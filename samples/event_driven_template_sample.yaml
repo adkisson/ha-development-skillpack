@@ -1,5 +1,5 @@
 ################################################################################
-# LIGHTING DIRECTIVE – EXAMPLE (TEMPLATE SENSOR)
+# EXAMPLE AREA LIGHTING TARGETS – TEMPLATE SENSOR (CANONICAL)
 #
 # ORGANIZATION: This example uses a `template:` block. Whether you need it depends
 # on your include context:
@@ -10,69 +10,109 @@
 # See your configuration includes to determine which applies.
 #
 # PURPOSE:
-#   Emits a simple directive ("on" vs "hold") based on an indoor illuminance
-#   reading, with a non-critical post-restart stagger gate.
+#   Computes an area lighting "targets" output:
+#     - State: "on"/"off"
+#     - Attributes: `has_targets`, `items_json`, `unavailable_entities`
 #
-# STATES:
-#   - on:   Indoor lux below threshold (room is considered dark)
-#   - hold: Indoor lux at/above threshold (no action needed)
-#
-# INPUTS (replace with your real entities):
-#   - sensor.example_indoor_lux
-#   - sensor.example_outdoor_irradiance
-#   - timer.ha_startup_delay
-#
-# DESIGN NOTES:
-#   - Single-read variables: compute lux once, derive state/reason from it.
-#   - Restart-friendly: re-evaluate once after startup delay clears (staggered).
-#   - Explainability: keep the state minimal; put "why" in a single `reason` attr.
-#   - Debug-ready: optional debug_* attrs are present but commented out.
-#
-# APPLIES: /patterns/lighting_directives.md
+# CONTRACT:
+#   - `items_json` is the primary output for downstream apply scripts.
+#   - Only three sample per-light shapes are demonstrated:
+#       1) brightness only
+#       2) color_temp_kelvin only
+#       3) rgb_color derived from kelvin via a lookup
 #
 # CHANGELOG:
-# - 20260102-1200: Canonical generic example. YAML syntax current as of 2026.1.x.
-# - 20251022-1430: Added HA restart stagger gate on trigger.
+# - 20260115-1145: Simplified canonical sample (3 item shapes). YAML syntax current as of 2026.1.x.
+# - 20260102-1200: Canonicalized header + organization guidance + JSON items contract.
 # - 20251019-0900: Initial example.
 ################################################################################
+
 template:
   - triggers:
-      # Indoor lux changed
       - trigger: state
-        entity_id: sensor.example_indoor_lux
-      # Outdoor irradiance changed (trigger failsafe: indoor lux sensor sometimes lags
-      # when clouds move overhead; irradiance trigger ensures sensor re-evaluates even
-      # if indoor lux hasn't changed enough to fire its own trigger)
-      - trigger: state
-        entity_id: sensor.example_outdoor_irradiance
-      # HA startup gate (non-critical, 45–75s stagger)
+        entity_id:
+          - sensor.example_area_ambient_lux
+          - input_boolean.example_area_lights_disable
+
+      - trigger: time_pattern
+        minutes: "/5"
+
+      # Post-restart recovery (non-critical, staggered)
       - trigger: state
         entity_id: timer.ha_startup_delay
         from: active
         to: idle
         for:
           seconds: "{{ range(45, 75) | random }}"
+
+    variables:
+      # === Inputs (single-read) ===
+      manual_block: "{{ is_state('input_boolean.example_area_lights_disable', 'on') }}"
+      lux_available: "{{ has_value('sensor.example_area_ambient_lux') }}"
+      lux: "{{ states('sensor.example_area_ambient_lux') | float(0) }}"
+
+      # === Simple plan (single brightness variable for the whole area) ===
+      threshold_lux: 40
+      brightness_pct: "{{ 25 if (lux_available and lux < threshold_lux) else 0 }}"
+
+      # === Color plan (kelvin -> rgb lookup) ===
+      kelvin: 2082
+      kelvin_rgb_table: "{{ {2000:[255,180,80], 2100:[255,185,90], 2200:[255,190,100]} }}"
+      rgb_from_kelvin: >-
+        {% set rounded = (kelvin | int // 100) * 100 %}
+        {{ kelvin_rgb_table.get(rounded, [255, 216, 255]) }}
+
+      # === Example target entities (replace with your real lights) ===
+      light_brightness_only: light.example_area_main
+      light_kelvin_only: light.example_area_bedside
+      light_rgb_from_kelvin: light.example_area_led_strip
+
+      # === Unavailable tracking ===
+      unavailable_entities_list: >-
+        {% set ns = namespace(u=[]) %}
+        {% for eid in [light_brightness_only, light_kelvin_only, light_rgb_from_kelvin] %}
+          {% if not has_value(eid) %}
+            {% set ns.u = ns.u + [eid] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.u }}
+
+      # === Global on/off + has_targets ===
+      lighting_allowed: "{{ (not manual_block) and (brightness_pct | int(0) > 0) }}"
+      has_targets: "{{ lighting_allowed }}"
+
     sensor:
-      - name: "Lighting Directive – Example"
-        unique_id: lighting_directive_example
-        # deps: sensor.example_indoor_lux, sensor.example_outdoor_irradiance, timer.ha_startup_delay
-        variables:
-          lux: "{{ states('sensor.example_indoor_lux') | float(0) }}"
-          threshold_lux: 40
-          state_v: >-
-            {% if lux < threshold_lux %}
-              on
-            {% else %}
-              hold
-            {% endif %}
-          reason_v: >-
-            {% if state_v == 'on' %}
-              Indoor lux below threshold
-            {% else %}
-              Indoor lux at/above threshold
-            {% endif %}
-        state: "{{ state_v }}"
+      - name: "Example Area – Lighting Targets"
+        unique_id: example_area_lighting_targets
+        icon: mdi:lightbulb-group
+        state: "{{ 'on' if has_targets else 'off' }}"
+
         attributes:
-          reason: "{{ reason_v }}"
-          # debug_lux: "{{ lux }}"
-          # debug_threshold_lux: "{{ threshold_lux }}"
+          has_targets: "{{ has_targets }}"
+
+          items_json: >-
+            {% if not has_targets %}
+              {{ [] | to_json }}
+            {% else %}
+              {% set ns = namespace(l=[]) %}
+
+              {% if light_brightness_only not in unavailable_entities_list %}
+                {% set ns.l = ns.l + [ {'light': light_brightness_only, 'brightness_pct': (brightness_pct | int(0))} ] %}
+              {% endif %}
+
+              {% if light_kelvin_only not in unavailable_entities_list %}
+                {% set ns.l = ns.l + [ {'light': light_kelvin_only, 'brightness_pct': (brightness_pct | int(0)), 'color_temp_kelvin': (kelvin | int)} ] %}
+              {% endif %}
+
+              {% if light_rgb_from_kelvin not in unavailable_entities_list %}
+                {% set ns.l = ns.l + [ {'light': light_rgb_from_kelvin, 'brightness_pct': (brightness_pct | int(0)), 'rgb_color': rgb_from_kelvin} ] %}
+              {% endif %}
+
+              {{ ns.l | to_json }}
+            {% endif %}
+
+          unavailable_entities: "{{ unavailable_entities_list }}"
+
+          # sample_brightness_pct: "{{ brightness_pct | int }}"
+          # sample_kelvin: "{{ kelvin | int }}"
+          # sample_rgb: "{{ rgb_from_kelvin }}"

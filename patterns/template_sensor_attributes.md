@@ -32,7 +32,7 @@ attributes:
 Uncomment lines in YAML, reload templates/restart, then re-comment when done. The sensor will expose those attributes for inspection in Developer Tools or automations.
 
 ## Degradation & Observability
-For sensors depending on external data sources, expose degradation state via attributes (see `/patterns/integration_degradation.md`).
+For sensors depending on external data sources (e.g., non-Home Assistant APIs or REST sensors), expose degradation state via attributes (see `/patterns/integration_degradation.md`).
 
 **Pattern: `active_tier` + `data_quality` + `reasoning`**:
 ```jinja
@@ -74,3 +74,7 @@ value_template: >
 - Template integration docs: https://www.home-assistant.io/integrations/template/
 - `/patterns/integration_degradation.md` — Degradation strategies
 - `/cookbooks/dtt_techniques.md` — Debugging with attributes
+
+---
+
+_Last updated: 2026-01-27
