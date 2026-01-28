@@ -7,7 +7,8 @@ description: >
   Resilience: randomized non-critical delay flattens startup load; critical paths
   prioritize perimeter/life-safety.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 20260102-1620: Canonicalized example. Uses trigger-level `for:` only (no action delays), randomized non-critical stagger to prevent thundering herd, and explicit critical vs non-critical recovery paths.
   - 20251022-1100: Introduced split recovery gates: critical (7s fixed) vs
     non-critical (45–75s randomized) using trigger-level `for:`.

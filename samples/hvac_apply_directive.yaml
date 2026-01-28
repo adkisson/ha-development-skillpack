@@ -3,7 +3,8 @@ description: >
   Applies sensor.hvac_control_directive to all climate zones via queued fan-out script.
   Triggers on directive change and a non-critical post-start gate.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 20260102-1530: Canonicalized example. Verified on HA 2025.12+.
   - 20251022-1100: Introduced non-critical randomized trigger gate; queued fan-outs via script.
   - 20251019-1200: Initial sample.

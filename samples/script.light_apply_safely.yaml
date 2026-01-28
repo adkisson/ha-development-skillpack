@@ -6,7 +6,8 @@ description: >
   Resilience: continue_on_error is intentional to tolerate transient device/mesh errors;
   idempotency guard prevents redundant writes even if a call fails.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 20251022-1600: Initial release. Aligned with Lighting ON/ADJUST paths.
   - 20260102-1200: Added explicit input normalization, clamped brightness handling,
     unavailable-state guards, and GUI-safe structure. Verified on HA 2025.12+.

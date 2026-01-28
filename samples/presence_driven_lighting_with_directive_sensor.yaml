@@ -202,7 +202,8 @@ description: >
   Trigger-level `for:` provides OFF stickiness; manual override wins.
   Manual override detection watches main light only; accent adjustments are not tracked.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 20260102-1200: Canonical example for presence-driven area lighting.
     YAML syntax current as of 2026.1.x.
 

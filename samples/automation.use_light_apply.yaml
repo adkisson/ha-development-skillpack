@@ -4,7 +4,8 @@ description: >
   idempotent script. Manual override is evaluated first to provide an explicit
   escape hatch. Skipped paths are silent by design.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 20260102-1430: Canonicalized example. Verified on HA 2025.12+.
   - 20251022-1200: Initial sample using central safe-apply script.
 

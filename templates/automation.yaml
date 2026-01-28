@@ -6,7 +6,8 @@ description: >
   and brains-vs-muscles pattern (sensor directives, automation routes).
   Skipped paths are silent by design.
 
-  CHANGELOG:
+  **CHANGELOG:**
+
   - 2026-01-02: Canonicalized.
 
 mode: single

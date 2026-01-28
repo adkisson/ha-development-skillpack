@@ -40,9 +40,14 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
    - Manual/guest/safety modes always win. See `/spec/safety.md` for patterns.
 11) **Breaking Changes (12 months)**  
    - Any refactor or enhancement: review last 12 months of [HA Release Notes](https://www.home-assistant.io/latest-release-notes/). Proactively adapt code for breaking schema/attribute/behavior changes. Document "BC review: done/N/A".
-12) **Changelog & Versioning**  
-   - Add **CHANGELOG** block in YAML `description:` (undecorated, no `#` prefix) with format: `YYYYMMDD-HHMM: Single sentence summary.`
+12) **Changelog & Versioning**
+   - Format: `YYYYMMDD-HHMM: Single sentence summary.`  
    - Timezone: **America/Los_Angeles** (local time).
+  a) **Automations & Scripts**  
+    - Add **CHANGELOG** block in YAML `description:` (not YAML `#` comments).  
+    - `description:` is Markdown-rendered; when using list items (`- ...`), a blank line MUST separate `CHANGELOG:` from the first item.
+  b) **YAML-defined entities (e.g., template sensors)**  
+    - Use YAML `# CHANGELOG:` comments near the top of the definition.
 13) **Exceptions**  
    - Deviations allowed **only if documented inline** (in `description`, `alias`, or sensor comments).
 14) **Self‑Critique & Verdict**  

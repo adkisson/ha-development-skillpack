@@ -9,6 +9,8 @@ description: >
 **Maintainers:** Rob
 
 ## Changelog
+**v0.4.3** (20260127-2052)
+- Minor formatting cleanup in the CHANGELOG examples for scripts/automations and clarifications of formatting requirements
 **v0.4.2** (20260127-1241)
 - Resolved conflicting availability guidance; standardized on `has_value()` with explicit empty-string guard for known malformed sources.
 - Canonicalized event-driven template patterns, restart gates, and non-critical startup staggering.
