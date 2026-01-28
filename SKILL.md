@@ -5,7 +5,7 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.2
+**Version:** 0.4.3
 **Maintainers:** Rob
 
 ## Changelog
