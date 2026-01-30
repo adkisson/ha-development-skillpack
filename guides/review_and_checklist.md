@@ -3,6 +3,11 @@
 Use this for every change. Goal: **simplest robust** solution that is restart‑safe, idempotent, and observable.
 
 ## A) Review Flow (Detailed)
+0) **System Impact Classification**: Before review, classify the system by **worst-credible impact if it fails** (Class A–D) using `/guides/system_impact_class.md`.
+   - Record the selected class.
+   - Briefly note the worst-credible failure mode.
+   - Document any **Context Elevation** reasoning if applicable.
+   - The assigned class determines the required rigor for all subsequent review steps.
 1) **KISS gate**  
    - Propose a simpler alternative if one exists; document why rejected.  
    - For complex problems, present **3–10 options** and choose the simplest viable.

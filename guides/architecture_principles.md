@@ -1,12 +1,22 @@
 # Architecture Principles (Expanded)
 
+## 0) System Impact Classification
+See: `/guides/system_impact_class.md`
+
+- Before any architectural decisions are made, classify the system by **worst-credible impact if it fails** (Class A–D).
+- System Impact Classification determines required rigor, defensive programming posture, and acceptable tradeoffs for all subsequent design decisions.
+
 ## 1) Simplicity (KISS)
 - For complex problems, present **3–10** plausible designs; choose the simplest robust path.
 - Eliminate unnecessary triggers/helpers/branches; resist premature abstraction.
 
-## 2) Separation of Concerns (Brains vs Muscles)
-- **Template sensors** compute directives + `reason`.
-- **Automations/scripts** react idempotently; device calls centralized in scripts.
+## 2) Separation of Concerns & Authority Scoping (Brains vs Muscles)
+- Separate *decision-making* from *actuation* to limit control radius and manage risk.
+- **Template sensors (“brains”)** compute directives, intent, and `reason`; treated as non-authoritative outputs.
+- **Automations and scripts (“muscles”)** react deterministically and idempotently; all physical device control is centralized and auditable.
+- Scope authority deliberately based on System Impact Class:
+  - Prefer **read, display, notify, or suggest** behaviors over direct actuation.
+  - Escalate to **direct control** only when **read, display, notify, or suggest** approaches cannot meet safety, reliability, or correctness requirements.
 
 ## 3) Intent-First Paths
 - **Lighting ON-path**: speed priority; minimal gates; central script applies targets fast.

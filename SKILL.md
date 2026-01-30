@@ -5,19 +5,14 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.3
+**Version:** 0.4.4
 **Maintainers:** Rob
 
 ## Changelog
-**v0.4.3** (20260127-2052)
-- Minor formatting cleanup in the CHANGELOG examples for scripts/automations and clarifications of formatting requirements
-**v0.4.2** (20260127-1241)
-- Resolved conflicting availability guidance; standardized on `has_value()` with explicit empty-string guard for known malformed sources.
-- Canonicalized event-driven template patterns, restart gates, and non-critical startup staggering.
-- Strengthened review checklist with comment-free automation policy and mandatory debug attributes for template sensors.
-- Updated Jinja patterns and lint rules to align with Home Assistant idiomatic usage and documented safety exceptions.
-**v0.4.1** (20260126-1430)
-- **Updated examples**: ensured that all examples used current, valid YAML and the correct date format
+**v0.4.4** (20260130-0943)
+- Added System Impact Classification (Class A–D) with Context Elevation to scale design rigor by worst-credible failure impact as well as proportional risk assessment requirements; integrated as Gate 0 in architecture and review, and extended Brains vs Muscles to include risk-based authority scoping.
+**v0.4.3–v0.4.1** (20260126–20260127)
+- Maintenance release: formatting cleanup, example correctness, checklist clarifications, and Jinja pattern alignment. No new architectural or behavioral requirements introduced.
 **v0.4.0** (20260102-1200)
 - **Conditional control flow**: Formalized `choose` vs `if/elif/else` rule. Use `choose` only for 100% mutually exclusive branches; use `if/elif/else` when conditions overlap or precedence matters.
 - **Comments policy**: Reinforced that comments belong only in template sensors (`# deps:`, `# verified:`); automations use `alias:` and `description:` exclusively.
@@ -45,6 +40,7 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **Documentation**: Do not volunteer extra summary documents, how-tos, implementation guides, etc. EXCEPT as requested or mandated by this skill documentation. Ask before creating new documentation artifacts.
 
 ## Core Rules
+- **System Impact Classification**: All systems MUST be classified by worst-credible impact (Class A–D) before design to determine required rigor, defensive programming posture, and validation depth.  See `/guides/system_impact_class.md`.
 - **KISS first**: Prefer the simplest design that solves the problem robustly. For complex problems, propose **3–10 options**, compare trade‑offs, and converge on the simplest viable path.
 - **GUI‑friendly YAML**: always include `alias:` and `description:`; use plural keys (`triggers`, `conditions`, `actions`); add `id:` per trigger; add `alias:` on nested steps (variables, if/then, choose, repeat sequences).
 - **Conditional Control Flow**: Use `choose` only for **100% mutually exclusive branches** (each condition impossible if prior conditions were false). Use `if/elif/else` when conditions overlap or precedence matters (e.g., manual override escaping all checks). **All automations must declare `mode:`** (e.g., `mode: single` to prevent duplicate actions). **Ensure all trigger states are reachable** (no dead code branches); validate downstream actions handle all trigger states.
