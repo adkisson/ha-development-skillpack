@@ -5,10 +5,12 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.4
+**Version:** 0.4.5
 **Maintainers:** Rob
 
 ## Changelog
+**v0.4.5** (20260202-1333)
+- Added gui quirks to the spec to reduce review churn
 **v0.4.4** (20260130-0943)
 - Added System Impact Classification (Class A–D) with Context Elevation to scale design rigor by worst-credible failure impact as well as proportional risk assessment requirements; integrated as Gate 0 in architecture and review, and extended Brains vs Muscles to include risk-based authority scoping.
 **v0.4.3–v0.4.1** (20260126–20260127)

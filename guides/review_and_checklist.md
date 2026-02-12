@@ -94,6 +94,7 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 - [ ] No device calls inside loops without guards
 - [ ] No logging; description/alias carry intent only
 - [ ] Trigger coverage: each trigger ID referenced exactly once; else: branch logs trigger.id for catch-all validation
+- [ ] Empty `metadata: {}`/`data: {}` blocks: acceptable if GUI-edited (editor auto-adds); remove only in pure-YAML workflows
 
 ### Script Sub‑Checklist
 - [ ] `mode` and `max` reflect expected concurrency

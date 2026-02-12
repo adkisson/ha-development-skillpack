@@ -3,8 +3,7 @@
 Every YAML must include:
 - `alias:` (human-readable title) and `description:` (purpose + key decisions).
 - A concise **CHANGELOG** using the rules defined in §12 (**Changelog & Versioning**).
-- Dependencies list in comments if relevant (`input_boolean.*`, `timer.*`, `sensor.*`).
-- “Last verified on HA <version>” comment.
+- Dependencies list in comments if non-obvious and relevant (`input_boolean.*`, `timer.*`, `sensor.*`).
 
 ---
 
