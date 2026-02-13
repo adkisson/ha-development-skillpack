@@ -11,7 +11,7 @@ This repository contains a **[skill](https://github.com/anthropics/skills) pack*
 
 It is:
 
-* based on **my** HA instance and interests (and strong opinions about what works for me)
+* based on **my** HA instance and interests (and strong opinions about what works for me),
 * a common set of design principles and guidelines,
 * a set of constraints,
 * a mental model for discussing automations,
@@ -34,6 +34,22 @@ It reflects how *I* currently think about HA coding — not a universal framewor
 ## Why it exists
 
 As my desire for HA functionality far outstripped my own ability to code (or even structurally think through the setup), I turned to LLMs to see if I could augment my skills.  After a few small automation enhancements, I realized that I was going to get nowhere without very structured documentation of prompts, constraints, and gotchas.  Those started well before Anthropic introduced skills and form the basis of everything here.
+
+---
+
+## How I Use This Skill
+
+I use this Skill in two separate prompt sessions — sometimes with two different AI models.
+
+First, I ask the AI to write the automation, script, sensor, etc. using these rules.
+
+Second, I ask it to act as a grumpy senior architect/reviewer — focused on correctness, restart behavior, edge cases, and strict adherence to the Skill.
+
+The first session gets it working.  
+The second session tries to break it.  
+(Repeat as necessary to get to the final code.)
+
+Both are part of the process.
 
 ---
 

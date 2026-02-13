@@ -5,28 +5,20 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.4.5
+**Version:** 0.5.0
 **Maintainers:** Rob
 
 ## Changelog
-**v0.4.5** (20260202-1333)
-- Added gui quirks to the spec to reduce review churn
-**v0.4.4** (20260130-0943)
-- Added System Impact Classification (Class A–D) with Context Elevation to scale design rigor by worst-credible failure impact as well as proportional risk assessment requirements; integrated as Gate 0 in architecture and review, and extended Brains vs Muscles to include risk-based authority scoping.
-**v0.4.3–v0.4.1** (20260126–20260127)
-- Maintenance release: formatting cleanup, example correctness, checklist clarifications, and Jinja pattern alignment. No new architectural or behavioral requirements introduced.
-**v0.4.0** (20260102-1200)
-- **Conditional control flow**: Formalized `choose` vs `if/elif/else` rule. Use `choose` only for 100% mutually exclusive branches; use `if/elif/else` when conditions overlap or precedence matters.
-- **Comments policy**: Reinforced that comments belong only in template sensors (`# deps:`, `# verified:`); automations use `alias:` and `description:` exclusively.
-- **Trigger coverage**: Ensured all trigger states are reachable (no dead code branches); validate downstream action can handle all trigger states.
-- **Condition gating**: Avoid global conditions that block state transitions; instead gate within conditional branches (`choose` or `if/elif/else`) to ensure observability/logging.
-- **JSON decoding in automations**: Added pattern for safe JSON list/dict decoding from sensor attributes with fallback defaults.
-- **Manual override precedence**: Manual overrides must be first in decision trees (earliest `if` or first `choose` branch) to ensure escape hatch always works.
-- **Integration degradation**: Added `/patterns/integration_degradation.md`, canonical example with graceful API failure handling, safe defaults, and tier-based fallback.
-- Enhanced `/spec/safety.md` with integration unavailability section.
-- Expanded `/cookbooks/dtt_techniques.md` with integration failure testing.
-- Added subsection to `/patterns/template_sensor_attributes.md` (data_quality pattern).
-- Added integration stability table to `/patterns/integration_degradation.md`.
+## 0.5.0
+- Added Household UX / Annoyance Risk Review (HAF) as a required review step and sub-checklist.
+- Elevated preservation of Household UX to a Core Rule.
+- Added Blueprint Validation requirement (schema compliance + instantiated artifact validation).
+## 0.4.x
+- Introduced System Impact Classification (Class A–D).
+- Standardized restart/recovery posture and trigger-level staggering.
+- Formalized Safe Jinja constraints and YAML structure expectations.
+- Strengthened review flow, validation discipline (DTT-first), and changelog/versioning rules.
+- Clarified control-flow, idempotency, chatter control, and integration degradation patterns.
 
 
 ## Purpose
@@ -61,6 +53,9 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **Exceptions**: allowed, but **must be documented inline** in `description`, `alias`, or sensor `#comments`.
 - **Precise Updates**: When modifying complex existing systems, **favor surgical edits** over comprehensive rewrites (unless refactoring is explicitly approved); minimize diff footprint for easier review and rollback.
 - Timezone: **America/Los_Angeles** (local time). Use `as_timestamp()` for time math.
+- **Blueprints are packaging only**: The instantiated artifact must be indistinguishable from a first-class automation/script in structure, safety posture, and review rigor.
+- Reliability includes **preservation of Household UX**; repeated annoyance constitutes a production-level defect.
+
 
 ## Review Process
 Use **/guides/review_and_checklist.md** for the end‑to‑end review flow, rubric, and copy‑paste checklists (kept in sync with this page).

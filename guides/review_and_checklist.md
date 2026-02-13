@@ -57,6 +57,11 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
    - Deviations allowed **only if documented inline** (in `description`, `alias`, or sensor comments).
 14) **Self‑Critique & Verdict**  
    - Risks, alternatives, rollback. Verdict categories below.
+15) **Blueprint Validation (if used)**
+   - Confirm compliance with the official Home Assistant blueprint schema and validate at least one instantiated artifact against all standard automation/script expectations before approval.
+16) **Household UX / Annoyance Risk Review (HAF) completed**
+   - Confirm the change does not introduce new human-impact failure modes. High-impact risks must be mitigated, documented as accepted tradeoffs, or the change must not ship.
+
 
 ## B) Verdicts
 - **Production‑ready** · **Low‑risk w/ notes** · **Needs revision** · **Do not ship**
@@ -86,6 +91,7 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 - [ ] Breaking changes (12 months) reviewed; documented as "BC review: done/N/A"
 - [ ] Exceptions documented inline (description/alias/comments)
 - [ ] Risks/alternatives/rollback documented; verdict chosen
+- [ ] Household UX / Annoyance Risk Review (HAF) completed (see sub-checklist)
 
 ### Automation Sub‑Checklist
 - [ ] Minimal, precise triggers; unique `id` and `alias`
@@ -120,6 +126,20 @@ Use this for every change. Goal: **simplest robust** solution that is restart‑
 - [ ] No templated randomization in critical paths (or documented as accepted tradeoff)
 - [ ] Post-restart gates use 45–75s random `for:` delay (prevents thundering herd)
 
+### Household UX / Annoyance Risk Sub-Checklist *(aka Household Approval Factor – HAF)*
+**This review is performed AFTER all technical, structural, and safety checks are complete.**
+
+- [ ] False-trigger probability evaluated
+- [ ] Oscillation / repeated toggle risk evaluated
+- [ ] Notification fatigue risk evaluated
+- [ ] Sleep disruption risk evaluated (late night / early morning behavior)
+- [ ] Manual override conflict evaluated ("automation fighting humans")
+- [ ] Restart recovery annoyance evaluated
+- [ ] Sensor chatter / flapping risk evaluated
+- [ ] Guest-mode behavior considered
+- [ ] Silent failure modes identified
+- [ ] Trust erosion vectors identified (conditions that would cause someone to disable the automation)
+- [ ] High-impact annoyance risks mitigated, documented, or explicitly accepted as tradeoffs
 
 -----
 (1) If the source is known to emit blank strings, add and (states(...)|trim) != ''.
