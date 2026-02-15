@@ -2,6 +2,14 @@
 
 Use this for every change. Goal: **simplest robust** solution that is restart‑safe, idempotent, and observable.
 
+## Blocking Gate — Secret & Identifying Material
+- Compliant with `spec/security.md` (no secret or identifying material present).
+
+If detected:
+- Mark as ❌
+- Stop review
+- Do not continue architectural analysis
+
 ## A) Review Flow (Detailed)
 0) **System Impact Classification**: Before review, classify the system by **worst-credible impact if it fails** (Class A–D) using `/guides/system_impact_class.md`.
    - Record the selected class.
