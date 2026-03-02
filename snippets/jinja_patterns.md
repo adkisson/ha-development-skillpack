@@ -150,12 +150,25 @@
 **Do**
 ```jinja
 {{ states('sensor.name') | replace('old','new') | lower | trim }}
-{{ 'a,b,c' | split(',') }}
+
+{# CSV parsing — portable, normalized, limited-template safe #}
+{{ 'a,b,c'
+   | regex_findall('[^,]+')
+   | map('trim')
+   | map('lower')
+   | reject('equalto','')
+   | unique
+   | list }}
 ```
 **Don’t**
 ```jinja
 {{ states('sensor.name').replace('old','new').lower().strip() }}
+
+{# Avoid Python string methods for consistency and limited-template safety #}
 {{ 'a,b,c'.split(',') }}
+
+{# Avoid non-standard / unavailable filters #}
+{{ 'a,b,c' | split(',') }}
 ```
 
 ## List Building (no `.append()`)

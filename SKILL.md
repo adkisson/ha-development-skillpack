@@ -5,10 +5,14 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.1
+**Version:** 0.5.2
 **Maintainers:** Rob
 
 ## Changelog
+## 0.5.2
+- Clarified choose in skill.md
+- Fixed incorrect split filter in snippets/jinja_patterns.md
+- Expanded blueprint guidance in the Core Rules
 ## 0.5.1
 - Added mandatory hard stop for secrets contained outside of secrets.yaml
 - Refined choose vs if/then language
@@ -42,7 +46,7 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **System Impact Classification**: All systems MUST be classified by worst-credible impact (Class A–D) before design to determine required rigor, defensive programming posture, and validation depth.  See `/guides/system_impact_class.md`.
 - **KISS first**: Prefer the simplest design that solves the problem robustly. For complex problems, silently propose **3–10 options**, compare trade‑offs, and converge on the simplest viable path.
 - **GUI‑friendly YAML**: always include `alias:` and `description:`; use plural keys (`triggers`, `conditions`, `actions`); add `id:` per trigger; add `alias:` on nested steps (variables, if/then, choose, repeat sequences).
-- **Conditional Control Flow**: Use `choose` only for **100% mutually exclusive branches** (each condition impossible if prior conditions were false). Exclusivity must be provable from entity state logic alone — not assumed by convention, environment, or operational expectation. Use `if/elif/else` when conditions overlap or precedence matters (e.g., manual override escaping all checks). 
+- **Conditional Control Flow**: Use `choose` only for **100% mutually exclusive branches** (each condition impossible if prior conditions were false). Exclusivity must be provable from system state alone — entity states, trigger IDs, or other HA-native discriminators — not assumed by convention, environment, or operational expectation. Use `if/elif/else` when conditions overlap or precedence matters (e.g., manual override escaping all checks). 
 - **All automations must declare `mode:`** (e.g., `mode: single` to prevent duplicate actions). 
 - **Ensure all trigger states are reachable** (no dead code branches); validate downstream actions handle all trigger states. Reachability must account for restart states (unknown, unavailable) and restored helper values.
 - **Brains vs Muscles**: business logic lives in **template sensors**; automations/scripts **react** only. Keep actions minimal and idempotent.
@@ -60,7 +64,7 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **Exceptions**: allowed, but **must be documented inline** in `description`, `alias`, or sensor `#comments`.
 - **Precise Updates**: When modifying complex existing systems, **favor surgical edits** over comprehensive rewrites (unless refactoring is explicitly approved); minimize diff footprint for easier review and rollback.
 - Timezone: **America/Los_Angeles** (local time). Use `as_timestamp()` for time math.
-- **Blueprints are packaging only**: The instantiated artifact must be indistinguishable from a first-class automation/script in structure, safety posture, and review rigor.
+- **Blueprints are packaging only**: The instantiated artifact must be indistinguishable from a first-class automation/script in structure, safety posture, and review rigor; template on the underlying artifact type first, and validate all blueprint-specific schema strictly against official Home Assistant documentation—conflicts are Skill Pack update candidates, not blueprint exceptions.
 - Reliability includes **preservation of Household UX**; repeated annoyance constitutes a production-level defect.
 
 
