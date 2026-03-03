@@ -13,7 +13,7 @@ description: >
 - Added `snippets/jinja_patterns.md`: Entity Set Iteration section and cheat sheet bullet covering `label_entities()`/`area_entities()`/`floor_entities()` flat string list return type and `expand()` requirement before state/attribute access (FG-02, HALMark v0.9.9, MIT)
 - Updated `spec/triggers.md` and `guides/review_and_checklist.md`: state trigger `to:`/`from:` and event trigger `event_type:` are literal string matches only — never Jinja; `for:` does accept Jinja; use `platform: template` + `value_template:` for evaluated expressions (FG-15, FG-22, HALMark v0.9.9, MIT)
 - Added `spec/runtime.md`: Attribute Size Limit section covering HA recorder's silent 16,384-byte attribute drop and dict-merge guard pattern (FG-21, HALMark v0.9.10, MIT)
-- Updated `spec/runtime.md`: Refactor & Upgrade Policy — moved review outcome to session changelog, removed YAML comment instruction, strengthened HA docs as inviolable ground truth
+- Updated `spec/runtime.md`: Refactor & Upgrade Policy — HA standards compliance review is delivered as a succinct in-session summary only — not recorded in the automation, script, or any artifact, strengthened official HA docs as inviolable ground truth
 - Added `patterns/recursive_loop.md`: Recursive Automation Loop pattern covering trigger entity == action target re-entry risk, detection heuristic, guard patterns, and common scenarios (FG-25, HALMark v0.9.10, MIT)
 - Added `guides/review_and_checklist.md`: recursive loop checklist item in Automation Sub-Checklist
 - Source: HALMark (https://github.com/nathan-curtis/HALMark, MIT License, Nathan Curtis)
