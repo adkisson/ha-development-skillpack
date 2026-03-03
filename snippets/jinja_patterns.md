@@ -1,157 +1,286 @@
-# Jinja Patterns for Home Assistant – Do / Don’t
+# Jinja Patterns for Home Assistant -- Do / Don't
 
-> Purpose: short, copy‑paste‑able idioms + **WHAT NOT TO DO** in HA Jinja.
+> Purpose: short, copy-paste-able idioms + **WHAT NOT TO DO** in HA
+> Jinja.
+
+------------------------------------------------------------------------
+
+## Cheat Sheet
+
+- **Always type states**: `states('sensor.x') | int(0)` / `| float(0)` *(or `float(none)` if 0 would be misleading)* → [Safe Reads](#safe-reads), [Nullable Attributes](#nullable-attributes--violation-flags)
+- **Availability first**: `has_value('sensor.x')` *(and `| trim != ''` for REST/MQTT blanks)* → [Existence & Availability](#existence--availability)
+- **Text normalization**: `| lower | trim` → [Text Normalization](#text-normalization)
+- **Time math**: `as_timestamp()` / `now()`; avoid `.total_seconds()`; use `default=none` for non-timestamps → [Datetime Safety](#datetime-safety)
+- **Attributes**: `state_attr('entity','attr') | default(...)` (never `states.entity.attributes...`) → [Attribute Access](#attribute-access)
+- **JSON out**: `| tojson` → [JSON Packaging](#json-packaging)
+- **CSV list**: `regex_findall('[^,]+') | map('trim') | map('lower') | reject('equalto','') | unique | list` → [String Operations](#string-operations-use-filters-not-python-methods)
+- **Dict lookups**: prefer `'key' in d` + indexing; allow `.get()` only on literal dicts → [Dict Lookup With Defaults](#dict-lookup-with-defaults-scoped-get-guidance)
+- **Iteration**: prefer `dict2items`; allow `.items()` only on literal dicts → [Keys/Values Iteration](#keysvalues-iteration)
+
+------------------------------------------------------------------------
 
 ## Safe Reads
+
 **Do**
-```jinja
+
+``` jinja
 {% set v = states('sensor.power') | float(0) %}
 {% set name = states('input_text.nickname') | default('unknown') %}
 ```
-**Don’t**
-```jinja
+
+**Don't**
+
+``` jinja
 {{ states.sensor.power.state | float }}                 {# breaks if entity missing #}
 {{ states('sensor.power') | float }}                    {# no default ⇒ NaN/None cascades #}
 ```
 
+**Note:**\
+Use `float(0)` when zero is a valid safe fallback.\
+If zero would create a misleading value (e.g., false 0°F, 0%), use
+`float(none)` and branch on `is none` instead (see *Nullable Attributes*
+below).
+
+------------------------------------------------------------------------
+
 ## Existence & Availability
 
-**Do (idiomatic – for standard HA entities)**
-```jinja
-{% if has_value('sensor.foo') %}  {# Not unknown or unavailable #}
+**Do (idiomatic -- for standard HA entities)**
+
+``` jinja
+{% if has_value('sensor.foo') %}
 ```
 
-**Do (conditional – if source emits blank strings)**
-```jinja
+**Do (conditional -- if source emits blank strings)**
+
+``` jinja
 {% if has_value('sensor.foo') and (states('sensor.foo') | trim) != '' %}
 ```
-**Why:** `has_value()` is HA's official check for unknown/unavailable. For REST/MQTT sources that may emit blank strings, add the trim guard.
 
 **Don't**
-```jinja
-{% if states('sensor.foo') != 'unknown' %}  {# Misses unavailable and empty #}
+
+``` jinja
+{% if states('sensor.foo') != 'unknown' %}
 ```
+
+------------------------------------------------------------------------
 
 ## Text Normalization
+
 **Do**
-```jinja
+
+``` jinja
 {% set cond = states('sensor.condition') | lower | trim %}
 ```
-**Don’t**
-```jinja
-{% set cond = states('sensor.condition').lower() %}     {# Python method on None ⇒ error #}
+
+**Don't**
+
+``` jinja
+{% set cond = states('sensor.condition').lower() %}
 ```
 
+------------------------------------------------------------------------
+
 ## Numbers & Math
+
 **Do**
-```jinja
+
+``` jinja
 {% set a = states('sensor.a') | float(0) %}
 {% set b = states('sensor.b') | float(0) %}
 {{ (a - b) | round(2) }}
 ```
-**Don’t**
-```jinja
-{{ float(states('sensor.a')) - float(states('sensor.b')) }} {# `float()` is Python, not a Jinja filter #}
+
+**Don't**
+
+``` jinja
+{{ float(states('sensor.a')) - float(states('sensor.b')) }}
 ```
+
+------------------------------------------------------------------------
 
 ## Datetime Safety
+
 **Do**
-```jinja
-{% set t = as_timestamp(now()) %}
-{% set age = (as_timestamp(now()) - as_timestamp(states.sensor.foo.last_changed)) %}
-```
-**Don’t**
-```jinja
-{{ (now() - states.sensor.foo.last_changed).total_seconds() }} {# total_seconds is Python and fails in triggers & elsewhere # #}
+
+``` jinja
+{# Parse a timestamp-like state safely (ISO, epoch, etc.) #}
+{% set ts = as_timestamp(states('sensor.foo'), default=none) %}
+{% set age = (as_timestamp(now()) - ts) if ts is not none else none %}
 ```
 
+**Don’t**
+
+``` jinja
+{{ (now() - states.sensor.foo.last_changed).total_seconds() }}
+```
+
+**Note:**\
+- `as_timestamp()` will return `none` (via `default=none`) if the state is not parseable as a timestamp (e.g., `"on"`).\
+- Never access `.last_changed` via `states.sensor.x.last_changed` in templates; use supported helpers (`states()`, `state_attr()`, `as_timestamp()`) and explicit guards.
+
+
+------------------------------------------------------------------------
+
 ## Numbers & Booleans from Strings
+
 **Do**
-```jinja
+
+``` jinja
 {% set n = states('sensor.count') | int(0) %}
 {% set on = is_state('switch.x','on') %}
 ```
-**Don’t**
-```jinja
-{% if states('switch.x') == True %}                     {# string vs bool mismatch #}
+
+**Don't**
+
+``` jinja
+{% if states('switch.x') == True %}
 ```
+
+------------------------------------------------------------------------
 
 ## Nullable Attributes & Violation Flags
+
 **Do**
-````jinja
+
+``` jinja
 {% set violation = 'high' if value > 68 else ('low' if value < 38 else none) %}
 {% set temp = states('sensor.temp') | float(none) %}
-````
-**Don't**
-````jinja
-{% set violation = 'high' if value > 68 else ('low' if value < 38 else 'null') %}  {# string "null", not Jinja none #}
-{% set temp = states('sensor.temp') | float(0) %}  {# returns false 0°F when unavailable #}
-````
+```
 
-**Why:** Returning Jinja `none` allows downstream logic to safely check `violation is none` or `violation != 'high'`. Returning string `"null"` requires string comparisons. Using `float(none)` prevents false-zero values (0°F, 0%) that confuse downstream alert logic.
+**Don't**
+
+``` jinja
+{% set violation = 'high' if value > 68 else ('low' if value < 38 else 'null') %}
+{% set temp = states('sensor.temp') | float(0) %}
+```
+
+**Why:**\
+Return Jinja `none` when a value is truly unavailable. This allows safe
+downstream checks like `temp is none`.\
+Use `float(none)` when zero would create a false reading. Use `float(0)`
+only when zero is a legitimate safe fallback.
+
+------------------------------------------------------------------------
 
 ## Attribute Access
+
 **Do**
-```jinja
+
+``` jinja
 {% set br = state_attr('light.kitchen','brightness') | int(0) %}
 ```
-**Don’t**
-```jinja
-{{ states.light.kitchen.attributes.brightness }}       {# fails on unknown/unavailable #}
+
+**Don't**
+
+``` jinja
+{{ states.light.kitchen.attributes.brightness }}
 ```
+
+------------------------------------------------------------------------
 
 ## JSON Packaging
+
 **Do**
-```jinja
+
+``` jinja
 {{ {'items': items, 'reason': reason} | tojson }}
 ```
-**Don’t**
-```jinja
-{{ {'items': items, 'reason': reason} }}               {# Python dict repr, not JSON #}
+
+**Don't**
+
+``` jinja
+{{ {'items': items, 'reason': reason} }}
 ```
 
-## Dict Lookup With Defaults (no `.get()`)
+------------------------------------------------------------------------
+
+## Dict Lookup With Defaults (Scoped `.get()` Guidance)
+
 **Do**
-```jinja
+
+``` jinja
 {% set d = states('sensor.payload') | from_json | default({}) %}
 {% set val = d['key'] if 'key' in d else 0 %}
 ```
-**Don’t**
-```jinja
-{{ d.get('key', 0) }}                                  {# `.get()` is a Python method; blocked in HA Jinja #}
+
+**Pragmatic Allowance**
+
+``` jinja
+{% set d = {'a': 1, 'b': 2} %}
+{{ d.get('a', 0) }}
 ```
 
+**Don't**
+
+``` jinja
+{{ states('sensor.payload') | from_json | default({}) .get('key', 0) }}
+```
+
+**Rule:**
+
+-   Avoid Python methods (`.get()`, `.items()`, etc.) on objects
+    returned from HA (`states()`, `state_attr()`, `from_json`, etc.).
+-   `.get()` is acceptable on known dict literals you construct
+    yourself.
+-   For new artifacts or refactors where a Python method is directly
+    implicated and easily replaced, prefer the filter/test pattern.
+-   Do not expand refactor blast radius solely to remove a safe `.get()`
+    on a literal dict.
+
+------------------------------------------------------------------------
+
 ## Nested Lookup (guard each level)
+
 **Do**
-```jinja
+
+``` jinja
 {% set d = states('sensor.payload') | from_json | default({}) %}
 {% set item = (d['outer']['inner'] if 'outer' in d and 'inner' in d['outer'] else 0) %}
 ```
-**Don’t**
-```jinja
-{{ d['outer']['inner'] }}                              {# KeyError if any level missing #}
+
+**Don't**
+
+``` jinja
+{{ d['outer']['inner'] }}
 ```
 
-## Keys/Values Iteration (avoid `.items()`)
+------------------------------------------------------------------------
+
+## Keys/Values Iteration
+
 **Do**
-```jinja
+
+``` jinja
 {% for pair in (d | dict2items) %}
   {{ pair.key }} → {{ pair.value }}
 {% endfor %}
 ```
-**Don’t**
-```jinja
-{% for k, v in d.items() %}                            {# `.items()` is a Python method; blocked #}
+
+**Pragmatic Allowance**
+
+``` jinja
+{% set d = {'a':1,'b':2} %}
+{% for k, v in d.items() %}
   {{ k }} → {{ v }}
 {% endfor %}
 ```
 
+**Rule:**
+
+-   Avoid `.items()` on HA-returned or JSON-derived objects.
+-   Acceptable on known literal dicts.
+-   Prefer `dict2items` in new or refactored artifacts.
+
+------------------------------------------------------------------------
+
 ## String Operations (use filters, not Python methods)
+
 **Do**
-```jinja
+
+``` jinja
 {{ states('sensor.name') | replace('old','new') | lower | trim }}
 
-{# CSV parsing — portable, normalized, limited-template safe #}
 {{ 'a,b,c'
    | regex_findall('[^,]+')
    | map('trim')
@@ -160,90 +289,92 @@
    | unique
    | list }}
 ```
-**Don’t**
-```jinja
+
+**Don't**
+
+``` jinja
 {{ states('sensor.name').replace('old','new').lower().strip() }}
-
-{# Avoid Python string methods for consistency and limited-template safety #}
 {{ 'a,b,c'.split(',') }}
-
-{# Avoid non-standard / unavailable filters #}
 {{ 'a,b,c' | split(',') }}
 ```
 
-## List Building (no `.append()`)
+------------------------------------------------------------------------
+
+## List Building
+
 **Do**
-```jinja
+
+``` jinja
 {% set result = [] %}
 {% set result = result + ['item'] %}
-{% set result = result + [variable] %}
 ```
-**Don’t**
-```jinja
+
+**Don't**
+
+``` jinja
 {% set result = [] %}
-{% do result.append('item') %}                          {# `.append()` is Python; blocked in HA Jinja #}
+{% do result.append('item') %}
 ```
-**Alternative for dynamic construction**
-```jinja
-{% set items = namespace(list=[]) %}
-{% for x in range(0,3) %}
-  {% set items.list = items.list + [x] %}
-{% endfor %}
-{{ items.list }}
-```
+
+------------------------------------------------------------------------
 
 ## Template Size & Cost
+
 **Do**
-```jinja
-{# Precompute once #}
+
+``` jinja
 {% set export = states('sensor.export') | float(0) %}
 {% set buy = states('sensor.buy') | float(0) %}
-{% set sell = states('sensor.sell') | float(0) %}
-```
-**Don’t**
-```jinja
-{{ states('sensor.export') | float(0) > 100 and states('sensor.buy') | float(0) < states('sensor.sell') | float(0) }}
-{# repeats expensive state() calls; harder to read/test #}
 ```
 
----
+**Don't**
+
+``` jinja
+{{ states('sensor.export') | float(0) > 100 and states('sensor.buy') | float(0) < states('sensor.sell') | float(0) }}
+```
+
+------------------------------------------------------------------------
+
 ## ⚠️ Trigger `for:` Template Complexity (Limited Context)
 
-Trigger `for:` blocks have **reduced template capabilities** compared to action templates. Complex filter chains and list operations fail silently or with cryptic errors.
+Trigger `for:` blocks have reduced template capability.
 
-**Do: Simple if/elif/else conditionals**
-```jinja
+**Do**
+
+``` jinja
 for:
   seconds: |
-    {% if night %} 20 {% elif irr <= 50 %} 90 {% elif irr <= 300 %} 60 {% else %} 25 {% endif %}
+    {% if night %} 20 {% elif irr <= 50 %} 90 {% else %} 25 {% endif %}
 ```
 
-**Don't: Filter chains or list ops in trigger `for:`**
-```jinja
+**Don't**
+
+``` jinja
 for:
-  seconds: '{{ ([20, calculated_value, 120] | sort)[1] | float }}'  {# Fails silently in trigger context #}
+  seconds: '{{ ([20, calculated_value, 120] | sort)[1] | float }}'
 ```
 
-**Workaround**: Move complex calculations to **action templates** or **template sensors**, then reference them in triggers.
+Move complex logic to template sensors or action templates.
 
----
+------------------------------------------------------------------------
+
 ## ❌ Don't: `state_not` in conditions (invalid)
 
-`state_not` is not a valid Home Assistant condition key and will raise:
-“Message malformed: extra keys not allowed”.
+`state_not` is not a valid Home Assistant condition key and will raise
+"Message malformed: extra keys not allowed".
 
-```yaml
-# ❌ Invalid
+**❌ Invalid**
+
+``` yaml
 condition:
   - alias: Reject when X is not 'on'
     state_not: 'on'
     entity_id: input_boolean.x
 ```
 
-## ✅ Do: Use `condition: not` + nested `state`
+**✅ Valid**
 
-```yaml
-# ✅ Valid
+``` yaml
 condition:
   - alias: Reject when X is not 'on'
     condition: not
@@ -253,27 +384,27 @@ condition:
         state: 'on'
 ```
 
-### Type Safety in Comparisons
-When comparing numeric values, always separate raw input from typed variable:
+------------------------------------------------------------------------
 
-**✅ Good pattern:**
-```jinja
-# Raw inputs (string from state)
+## Type Safety in Comparisons
+
+**Good pattern:**
+
+``` jinja
 brightness_raw: "{{ states('light.kitchen') }}"
 desired_brightness_raw: "{{ state_attr('input_number.target', 'value') }}"
 
-# Typed (safe for math/comparisons)
 brightness: "{{ brightness_raw | float(0) }}"
 desired_brightness: "{{ desired_brightness_raw | float(0) }}"
 
-# Comparison uses typed variables, not raw strings
 tolerance_ok: "{{ (brightness - desired_brightness) | abs <= 5 }}"
 ```
 
-**❌ Bad:**
-```jinja
+**Bad:**
+
+``` jinja
 tolerance_ok: "{{ states('light.kitchen') | float(0) - state_attr(...) | float(0) <= 5 }}"
 ```
-(Recomputes conversions multiple times; harder to debug)
 
-**Checklist item:** "Are numeric comparisons using typed variables, not string-rendered states?"
+**Checklist item:** "Are numeric comparisons using typed variables, not
+string-rendered states?"

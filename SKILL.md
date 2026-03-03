@@ -5,10 +5,12 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.2
+**Version:** 0.5.2a
 **Maintainers:** Rob
 
 ## Changelog
+## 0.5.2.a
+- Updated additional snippets/jinja_patterns for correctness
 ## 0.5.2
 - Clarified choose in skill.md
 - Fixed incorrect split filter in snippets/jinja_patterns.md
