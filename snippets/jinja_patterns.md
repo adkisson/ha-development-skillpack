@@ -16,6 +16,7 @@
 - **CSV list**: `regex_findall('[^,]+') | map('trim') | map('lower') | reject('equalto','') | unique | list` → [String Operations](#string-operations-use-filters-not-python-methods)
 - **Dict lookups**: prefer `'key' in d` + indexing; allow `.get()` only on literal dicts → [Dict Lookup With Defaults](#dict-lookup-with-defaults-scoped-get-guidance)
 - **Iteration**: prefer `dict2items`; allow `.items()` only on literal dicts → [Keys/Values Iteration](#keysvalues-iteration)
+- **Entity set iteration**: `label_entities()` / `area_entities()` / `floor_entities()` return flat **string lists** — use `expand()` before accessing `.state` or `.entity_id` → [Entity Set Iteration](#entity-set-iteration-labelareafloorfunctions)
 
 ------------------------------------------------------------------------
 
@@ -383,6 +384,42 @@ condition:
         entity_id: input_boolean.x
         state: 'on'
 ```
+
+------------------------------------------------------------------------
+
+## Entity Set Iteration (label/area/floor functions)
+
+`label_entities()`, `area_entities()`, `floor_entities()`, and
+`integration_entities()` return **flat lists of entity ID strings** —
+not state objects. Accessing `.state` or `.entity_id` on the raw results
+silently returns `None` or errors.
+
+**Do — IDs only**
+
+``` jinja
+{% for entity_id in label_entities('Security') %}
+  {{ entity_id }}
+{% endfor %}
+```
+
+**Do — need state or attributes: use `expand()` first**
+
+``` jinja
+{% for s in expand(label_entities('Security')) %}
+  {{ s.entity_id }} is {{ s.state }}
+{% endfor %}
+```
+
+**Don't**
+
+``` jinja
+{% for e in label_entities('Security') %}
+  {{ e.entity_id }} is {{ e.state }}  {# e is a string — .entity_id and .state are None #}
+{% endfor %}
+```
+
+**Note:** If the label/area might be empty, guard with a length check
+before iterating to avoid silent no-ops.
 
 ------------------------------------------------------------------------
 

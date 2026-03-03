@@ -16,6 +16,7 @@
 - Trigger `for:` blocks have limited template capabilities; complex filter chains (e.g., `([20, value, 120] | sort)[1]`) fail silently in trigger contexts.
 - **Do**: Use clear `if/elif/else` conditionals in trigger templates.
 - **Don't**: Use filter chains or list operations in `for:` blocks; use action templates instead.
+- `to:`/`from:` in state triggers and `event_type:` in event triggers are **literal string matches** — Jinja placed there is never evaluated and the trigger silently never fires. (`for:` does accept Jinja.) Use `platform: template` with `value_template:` for any expression that requires evaluation.
 
 **Device-specific state triggers over generic broadcasts**
 - When a device exposes state via entity attributes, prefer state triggers on the specific entity over generic event broadcasts (e.g., `zwave_js_value_notification`). Eliminates Z-Wave bus overhead and reduces system-wide latency.

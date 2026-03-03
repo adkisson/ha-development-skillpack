@@ -14,10 +14,33 @@
 
 Any refactor or enhancement must include a review of Home Assistant Release Notes from the **last 12 months up to and including the current release**. Proactively adapt code for breaking schema, attribute, or behavior changes discovered.
 
-Document the review outcome as:
-- `Release notes review: done`
-- `Release notes review: N/A`
+Document the review outcome in the session (not automation/script) changelog as:
+- `BC review: done`
+- `BC review: N/A`
 
-Include this in PR notes or YAML comments.
+> ⚠️ Never copy syntax, examples, or patterns from external sources without first confirming they are valid against the current HA Core version. Model training data lags — official HA docs are inviolable truth.
 
-> ⚠️ Confirm that any copied examples or external references match the current HA Core version.
+## Attribute Size Limit (16,384 Bytes)
+
+HA's recorder silently drops the entire attribute blob for an entity if
+its serialized JSON exceeds 16,384 bytes. No error is raised and the
+entity appears healthy in memory — the data is simply not written to the
+DB. After restart, attributes are gone.
+
+**Risk pattern**: trigger-based template sensors that accumulate state
+via dict-merge (`dict(current, **new)`).
+
+**Guard before committing**:
+```jinja
+{% set proposed = dict(current, **new) %}
+{{ current if proposed | tojson | length > 16384 else proposed }}
+```
+
+Pair with a `logbook.log` or `persistent_notification` in the action
+block so the caller knows the write was rejected.
+
+- The 16,384-byte limit applies to the **total serialized JSON of all
+  attributes** on the entity, not just one key.
+- State value has a separate 255-character limit.
+- `remove_variable` / `clear_variables` branches always reduce size —
+  no guard needed on those paths.

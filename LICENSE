@@ -19,3 +19,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Third-Party Attributions
+
+Portions of this skill incorporate concepts and patterns derived from the
+following open-source projects:
+
+**HALMark** — Home Assistant LLM Stewardship Benchmark
+Copyright (c) 2026 Nathan Curtis
+MIT License — https://github.com/nathan-curtis/HALMark
+Incorporated: FG-02, FG-15, FG-21, FG-22, FG-25 (v0.9.9–0.9.10)
+
+**homeassistant-ai/skills** — Home Assistant Agent Skills
+MIT License — https://github.com/homeassistant-ai/skills
+Incorporated: native construct decision ladder, helper selection hierarchy,
+device_id vs entity_id guidance (v0.5.3)

@@ -83,6 +83,7 @@ If detected:
 - [ ] Brains vs muscles respected; scripts for fan‑outs; concurrency sane
 - [ ] Control flow safety: `if/then` wraps `choose/default` branches (prevents unwanted default execution)
 - [ ] Restart gates on triggers (`timer.ha_startup_delay` w/ appropriate `for:`); **no action delays**
+- [ ] State trigger `to:`/`from:` and event trigger `event_type:` are **literal string matches only** — never Jinja; `for:` does accept Jinja; use `platform: template` + `value_template:` for evaluated expressions
 - [ ] Jinja safety: safe defaults (`| float(0)`, `| int(0)`)
 - [ ] No Python methods (`.get()`, `.items()`, `.total_seconds()`, etc.)
 - [ ] String normalization: `| lower | trim`
@@ -106,6 +107,7 @@ If detected:
 - [ ] Randomized vs fixed `for:` per criticality on HA restart
 - [ ] Variables precomputed once; branches small & ordered cheap→expensive
 - [ ] No device calls inside loops without guards
+- [ ] No recursive loop: if trigger entity == action target entity, a `to:` constraint and re-entry condition are mandatory
 - [ ] No logging; description/alias carry intent only
 - [ ] Trigger coverage: each trigger ID referenced exactly once; else: branch logs trigger.id for catch-all validation
 - [ ] Empty `metadata: {}`/`data: {}` blocks: acceptable if GUI-edited (editor auto-adds); remove only in pure-YAML workflows
@@ -121,6 +123,7 @@ If detected:
 - [ ] Clear directive state + `reason` attribute
 - [ ] Safe reads; expected commented `#debug_…` attributes
 - [ ] Optional `# deps:` and `# verified:` documentation for clarity
+- [ ] Accumulating dict-merge sensors: byte-length pre-check before commit (`proposed | tojson | length > 16384`)
 
 ### Time Math & Timezone Safety Sub-Checklist
 - [ ] Conversions explicit and consistent (`as_timestamp()` for math; `as_datetime()` only for parsing/display)
