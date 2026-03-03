@@ -5,11 +5,13 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.2a
+**Version:** 0.5.2b
 **Maintainers:** Rob
 
 ## Changelog
-## 0.5.2.a
+## 0.5.2b
+- Added a YAML standards Core Rule
+## 0.5.2a
 - Updated additional snippets/jinja_patterns for correctness
 ## 0.5.2
 - Clarified choose in skill.md
@@ -47,6 +49,7 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **SECURITY HARD STOP**: Any artifact containing secrets (passwords, API keys, tokens, private keys, embedded credentials, etc.) is an automatic rejection. No publication. Secrets must never appear in artifacts.
 - **System Impact Classification**: All systems MUST be classified by worst-credible impact (Class A–D) before design to determine required rigor, defensive programming posture, and validation depth.  See `/guides/system_impact_class.md`.
 - **KISS first**: Prefer the simplest design that solves the problem robustly. For complex problems, silently propose **3–10 options**, compare trade‑offs, and converge on the simplest viable path.
+- **YAML standards**: Always use (current release − 1) HA standards: Target the prior stable release (e.g., if current is 2026.2.x, use 2026.1.x standards). Consult official HA documentation before using any syntax not already demonstrated in this skill's examples.
 - **GUI‑friendly YAML**: always include `alias:` and `description:`; use plural keys (`triggers`, `conditions`, `actions`); add `id:` per trigger; add `alias:` on nested steps (variables, if/then, choose, repeat sequences).
 - **Conditional Control Flow**: Use `choose` only for **100% mutually exclusive branches** (each condition impossible if prior conditions were false). Exclusivity must be provable from system state alone — entity states, trigger IDs, or other HA-native discriminators — not assumed by convention, environment, or operational expectation. Use `if/elif/else` when conditions overlap or precedence matters (e.g., manual override escaping all checks). 
 - **All automations must declare `mode:`** (e.g., `mode: single` to prevent duplicate actions). 
