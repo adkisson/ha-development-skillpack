@@ -14,6 +14,7 @@ alias: Lighting – Porch Wave Pattern
 description: >
   Subtle wave effect for evenings; minimal chatter; idempotent guard applied.
 
+
   **CHANGELOG:**
 
   - 20251022-1200: Debounce and restart gate tuned.

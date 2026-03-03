@@ -4,20 +4,20 @@ Use this as your entry point. The skill is a reasoning framework for producing r
 
 ## Layout & Naming (kept here exclusively)
 - `guides/` — review how‑to & principles
-- `patterns/` — restart resilience, idempotency, chatter control, lighting paths
+- `patterns/` — behavioral design patterns (restart resilience, idempotency, chatter control, lighting paths)
 - `cookbooks/` — DTT techniques & debugging (incl. traces)
-- `snippets/` — Jinja Do/Don’t anti‑patterns
+- `snippets/` — isolated Jinja fragments and do/don't examples; not standalone deployable code
 - `templates/` — automation/script/template_sensor scaffolds + option matrix
-- `samples/` — coherent examples with `alias:` everywhere and YAML changelogs
+- `samples/` — complete, coherent YAML artifacts with alias: everywhere and YAML changelogs
 - `tools/` — helper shell scripts (`entity_snapshot.sh`, `lint_templates.sh`)
-- `spec/` — focused guardrails (runtime, triggers, safety, security, formatting, notifications, performance)
+- `spec/` — focused guardrails (runtime, triggers, safety, security, formatting, notifications, performance, entity references)
 
 **Entity naming:** `area_device_purpose` (e.g., `bedroom_ceiling_light`).  
 **Timestamped files (optional):** `<category>–YYYYMMDD–HHMM.yaml`.
 
 ## Workflow
 1) Draft using `/templates/*.yaml` (automation/script/template_sensor).  
-2) Check `/spec/*` guardrails (runtime, triggers, safety, security, formatting, notifications, performance).  
+2) Check `/spec/*` guardrails (runtime, triggers, safety, security, formatting, notifications, performance, entity references).
 3) Validate logic in **DTT** first (Developer Tools → Template).  
 4) **Reviewers** make a good‑faith pass to catch Jinja issues **before** running `tools/lint_templates.sh`.  
 5) Run the linter, then submit PR following **/guides/review_and_checklist.md**.  

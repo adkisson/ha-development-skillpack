@@ -12,11 +12,14 @@ See: `/guides/system_impact_class.md`
 
 ## 2) Separation of Concerns & Authority Scoping (Brains vs Muscles)
 - Separate *decision-making* from *actuation* to limit control radius and manage risk.
-- **Template sensors (“brains”)** compute directives, intent, and `reason`; treated as non-authoritative outputs.
-- **Automations and scripts (“muscles”)** react deterministically and idempotently; all physical device control is centralized and auditable.
+- **Automations and scripts ("muscles")** react deterministically and idempotently; all physical device control is centralized and auditable.
 - Scope authority deliberately based on System Impact Class:
   - Prefer **read, display, notify, or suggest** behaviors over direct actuation.
   - Escalate to **direct control** only when **read, display, notify, or suggest** approaches cannot meet safety, reliability, or correctness requirements.
+- **Decision ladder — apply in order, stop at the first tier that solves the problem:**
+  - **Tier 1 — Native construct**: Can a built-in trigger, condition, or action cover this? Native constructs validate at load time and fail loudly; templates fail silently at runtime. Common substitutions: `{{ states('x') | float > 25 }}` → `numeric_state` condition with `above: 25`; `{{ is_state('x', 'on') and is_state('y', 'on') }}` → `condition: and` with state conditions; `{{ now().hour >= 9 }}` → `condition: time` with `after: "09:00:00"`.
+  - **Tier 2 — Built-in helper**: Can a helper replace a template sensor? Helpers are declarative, handle unavailable states gracefully, and require no Jinja. Common substitutions: sum/average → `min_max`; binary any-on/all-on → `group`; rate of change → `derivative`; cross-threshold → `threshold` (includes built-in hysteresis); consumption tracking → `utility_meter`.
+  - **Tier 3 — Template sensor ("brains")**: Only if tiers 1 and 2 cannot solve it. Computes directives, intent, and `reason`; treated as non-authoritative output.
 
 ## 3) Intent-First Paths
 - **Lighting ON-path**: speed priority; minimal gates; central script applies targets fast.

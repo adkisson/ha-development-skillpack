@@ -1,6 +1,6 @@
 # Runtime & Versioning Policy
 
-- **HA Core floor**: target the latest release **minus ~1 month** (e.g., if latest is 2025.12, support ≥2025.11). Avoid features newer than the floor without explicitly confirming the running HA version.
+- **HA Core floor**: target the latest release **minus ~1 month** (e.g., if latest is 2026.2, support ≥2026.1). Avoid features newer than the floor without explicitly confirming the running HA version.
 
 - **Python**: use the version bundled with HA Core; avoid pinning external interpreters.
 

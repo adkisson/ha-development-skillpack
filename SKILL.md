@@ -5,10 +5,13 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.2b
+**Version:** 0.5.3
 **Maintainers:** Rob
 
 ## Changelog
+## 0.5.3
+- Extended guides/architecture_principles.md Section 2 with an explicit three-tier Decision Ladder (native construct → built-in helper → template sensor), inspired by homeassistant-ai/skills best-practices skill. Formalizes the "brains" selection process upstream of the existing brains vs muscles principle.
+- Added `spec/entity_references.md`: guardrails for entity_id vs device_id usage in triggers, conditions, actions, and target selectors.
 ## 0.5.2b
 - Added a YAML standards Core Rule
 ## 0.5.2a
