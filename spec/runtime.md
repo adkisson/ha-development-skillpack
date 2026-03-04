@@ -12,13 +12,13 @@
 
 ## Refactor & Upgrade Policy
 
-Any refactor or enhancement must include a review of Home Assistant Release Notes from the **last 12 months up to and including the current release**. Proactively adapt code for breaking schema, attribute, or behavior changes discovered.
+Any refactor or enhancement MUST include a review of Home Assistant release notes from the **last 12 months up to and including the current release**. Proactively adapt code for **backward-incompatible (breaking)** schema, attribute, service, or behavior changes affecting the **artifacts being authored, modified, or reviewed**.
 
-Document the review outcome in the session (not automation/script) changelog as:
+The **reviewer or developer** must confirm the outcome in their **summary** (not in automation/script artifacts or changelogs) as:
 - `BC review: done`
 - `BC review: N/A`
 
-> ⚠️ Never copy syntax, examples, or patterns from external sources without first confirming they are valid against the current HA Core version. Model training data lags — official HA docs are inviolable truth.
+> ⚠️ Never copy syntax, examples, or patterns from external sources without first confirming they are valid against the current HA Core version. Model training data lags — official HA documentation is the authoritative source.
 
 ## Attribute Size Limit (16,384 Bytes)
 

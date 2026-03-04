@@ -51,8 +51,9 @@ If detected:
    - Guard device calls; batch by group/area; rate‑limit noisy inputs; minimal bounded retry.
 10) **Overrides & Safety**  
    - Manual/guest/safety modes always win. See `/spec/safety.md` for patterns.
-11) **Breaking Changes (12 months)**  
-   - Any refactor or enhancement: review last 12 months of [HA Release Notes](https://www.home-assistant.io/latest-release-notes/). Proactively adapt code for breaking schema/attribute/behavior changes. Document "BC review: done/N/A".
+11) **Backward-Incompatible Changes (12 months)**  
+   - Any refactor or enhancement MUST review the last 12 months of Home Assistant release notes and proactively adapt for **backward-incompatible (breaking) changes** affecting schemas, services, attributes, or behavior.  
+   - The reviewer must confirm in their response: **"BC review: done"** or **"BC review: N/A"**.
 12) **Changelog & Versioning**
    - Format: `YYYYMMDD-HHMM: Single sentence summary.`  
    - Timezone: **America/Los_Angeles** (local time).
@@ -97,7 +98,7 @@ If detected:
 - [ ] DTT probes provided; traces referenced if orchestration validated
 - [ ] Best-in-class review completed: intent clarity, implementation alignment, condition placement, network efficiency
 - [ ] Wait strategies: `wait_template` preferred; exclusion lists guard empty string; `continue_on_timeout: true` used
-- [ ] Breaking changes (12 months) reviewed; documented as "BC review: done/N/A"
+- [ ] Backward-incompatible changes (12 months) reviewed
 - [ ] Exceptions documented inline (description/alias/comments)
 - [ ] Risks/alternatives/rollback documented; verdict chosen
 - [ ] Household UX / Annoyance Risk Review (HAF) completed (see sub-checklist)

@@ -46,7 +46,7 @@ See: `/guides/system_impact_class.md`
 - Production logging is rare and meaningful; otherwise silent.
 
 ## 8) Backward Compatibility
-- Proactively address **breaking changes** or **deprecated** attributes, entities, etc. for the last **12 months** on refactors/enhancements.
+- Refactors or enhancements MUST review Home Assistant release notes and proactively address **backward-incompatible changes** and **deprecations** from the last **12 months** affecting entities, services, attributes, templates, schemas, or any other Home Assistant artifact **modified by the change**.
 
 ## 9) Ownership & Collaboration
 - Healthy debate welcome; **owner’s call is final** and the skill defers.

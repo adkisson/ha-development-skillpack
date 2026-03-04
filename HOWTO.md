@@ -26,7 +26,7 @@ Use this as your entry point. The skill is a reasoning framework for producing r
 ## Glossary (no shorthand assumptions)
 - **HA**: Home Assistant
 - **DTT**: Developer Tools → **Template**
-- **BC**: **Breaking Change** — a change that requires user config adjustments or deprecates HA schema/keys/behavior
+- **BC**: **Backward-Incompatible Change** (often called a **breaking change**) — a change that requires user configuration updates or removes/deprecates existing HA schema, keys, attributes, services, or behavior.
 - **Idempotent**: Running the same action again doesn’t change state
 - **Brains vs Muscles**: templates decide; automations/scripts act
 - **Hysteresis**: guards to prevent oscillation between states

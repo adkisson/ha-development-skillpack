@@ -5,10 +5,12 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.4
+**Version:** 0.5.4a
 **Maintainers:** Rob
 
 ## Changelog
+## 0.5.4a
+- Standardized terminology to Home Assistant **“Backward-incompatible”** changes (formerly referred to as breaking changes).
 ## 0.5.4
 - Added `snippets/jinja_patterns.md`: Entity Set Iteration section and cheat sheet bullet covering `label_entities()`/`area_entities()`/`floor_entities()` flat string list return type and `expand()` requirement before state/attribute access (FG-02, HALMark v0.9.9, MIT)
 - Updated `spec/triggers.md` and `guides/review_and_checklist.md`: state trigger `to:`/`from:` and event trigger `event_type:` are literal string matches only — never Jinja; `for:` does accept Jinja; use `platform: template` + `value_template:` for evaluated expressions (FG-15, FG-22, HALMark v0.9.9, MIT)
@@ -75,7 +77,7 @@ A reusable instruction pack that standardizes how we co-create Home Assistant co
 - **Concurrency**: scripts managing multiple zones use `mode: queued` with a sensible `max`; automations that fan‑out should call scripts, not devices directly.
 - **Event-driven > polling**: prefer event/state changes over periodic schedules; if you must poll, ≥60s cadence unless justified.
 - **Test atomically first**: Validate all Jinja, entity references, and sensor outputs in Developer Tools → Templates **before** deploying to automations/sensors/scripts. Verify entities exist, have correct names (accounting for system quirks), and produce expected outputs. Theoretical logic often fails in production contexts (e.g., full filtering in trigger `for:` blocks, entity naming mismatches).
-- **Back‑compat**: proactively address Home Assistant **breaking changes** for the last 12 months when refactoring/enhancing.
+- **Back-compat**: address Home Assistant **backward-incompatible (breaking) changes** from the last **12 months** affecting artifacts being authored, modified, or reviewed.
 - **Comments policy**: Automations & scripts—**no comments**; use `description:` and `alias:` only. Template sensors—**optional** `#debug_*`, `# deps:`, `# verified:` comments for clarity. AppDaemon code—comments allowed for complex logic (use judiciously).
 - **Exceptions**: allowed, but **must be documented inline** in `description`, `alias`, or sensor `#comments`.
 - **Precise Updates**: When modifying complex existing systems, **favor surgical edits** over comprehensive rewrites (unless refactoring is explicitly approved); minimize diff footprint for easier review and rollback.
