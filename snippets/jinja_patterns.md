@@ -17,6 +17,8 @@
 - **Dict lookups**: prefer `'key' in d` + indexing; allow `.get()` only on literal dicts → [Dict Lookup With Defaults](#dict-lookup-with-defaults-scoped-get-guidance)
 - **Iteration**: prefer `dict2items`; allow `.items()` only on literal dicts → [Keys/Values Iteration](#keysvalues-iteration)
 - **Entity set iteration**: `label_entities()` / `area_entities()` / `floor_entities()` return flat **string lists** — use `expand()` before accessing `.state` or `.entity_id` → [Entity Set Iteration](#entity-set-iteration-labelareafloorfunctions)
+- **No comments inside Jinja literals**: lists/dicts must contain **data only**.
+  Put documentation **outside the template block** → [Comments in Jinja Literals](#comments-in-jinja-literals)
 
 ------------------------------------------------------------------------
 
@@ -445,3 +447,44 @@ tolerance_ok: "{{ states('light.kitchen') | float(0) - state_attr(...) | float(0
 
 **Checklist item:** "Are numeric comparisons using typed variables, not
 string-rendered states?"
+
+------------------------------------------------------------------------
+
+## Comments in Jinja Literals
+
+**Do**
+
+``` jinja
+# Static lookup table for the template below
+{% set values = [
+  [1, 2],
+  [3, 4]
+] %}
+```
+
+``` yaml
+# Holiday list used by the template below
+is_holiday: >-
+  {% set holidays = [
+    [2027, 1, 1],
+    [2027, 2, 15]
+  ] %}
+  {{ today in holidays }}
+```
+
+**Don't**
+
+``` jinja
+{% set values = [
+  [1, 2], {# inline comment #}
+  [3, 4]
+] %}
+```
+
+**Rule:**  
+Inside Jinja literals (`[]`, `{}`), keep content to **data only**.  
+Put documentation **outside the Jinja expression**.
+
+**Automation rule:**  
+Do **not** use YAML comments for documentation in automations.  
+Use `alias:` or `description:` instead.

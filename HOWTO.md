@@ -4,7 +4,7 @@ Use this as your entry point. The skill is a reasoning framework for producing r
 
 ## Layout & Naming (kept here exclusively)
 - `guides/` — review how‑to & principles
-- `patterns/` — behavioral design patterns (restart resilience, idempotency, chatter control, lighting paths)
+- `patterns/` — behavioral design patterns (restart resilience, idempotency, chatter control, lighting paths, execution gating)
 - `cookbooks/` — DTT techniques & debugging (incl. traces)
 - `snippets/` — isolated Jinja fragments and do/don't examples; not standalone deployable code
 - `templates/` — automation/script/template_sensor scaffolds + option matrix
@@ -27,6 +27,7 @@ Use this as your entry point. The skill is a reasoning framework for producing r
 - **HA**: Home Assistant
 - **DTT**: Developer Tools → **Template**
 - **BC**: **Backward-Incompatible Change** (often called a **breaking change**) — a change that requires user configuration updates or removes/deprecates existing HA schema, keys, attributes, services, or behavior.
+- **HAF**: **Household Acceptance Factor** — acceptance of all in the home for automation behavior and nuisance alerts.
 - **Idempotent**: Running the same action again doesn’t change state
 - **Brains vs Muscles**: templates decide; automations/scripts act
 - **Hysteresis**: guards to prevent oscillation between states

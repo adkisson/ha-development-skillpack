@@ -5,10 +5,13 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 0.5.4a
+**Version:** 0.5.5
 **Maintainers:** Rob
 
 ## Changelog
+## 0.5.5
+- Added prohibition for comments inside of jinja literals
+- Added \patterns/execution_gating.md`: positive-path framing pattern for automation action gating, including compound boolean gates, multi-path scaling, and when to invert to deny-by-default (Class A–B automations).`
 ## 0.5.4a
 - Standardized terminology to Home Assistant **“Backward-incompatible”** changes (formerly referred to as breaking changes).
 ## 0.5.4
