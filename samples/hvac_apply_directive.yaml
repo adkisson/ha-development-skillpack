@@ -1,12 +1,13 @@
 alias: Automation – HVAC Apply Global Directive
 description: >
-  Applies sensor.hvac_control_directive to all climate zones via queued fan-out script.
-  Triggers on directive change and a non-critical post-start gate.
+  Applies the global HVAC directive to all climate zones via queued fan-out script. Triggers on directive change and a non-critical post-start gate.
 
   **CHANGELOG:**
 
   - 20260102-1530: Canonicalized example.
+
   - 20251022-1100: Introduced non-critical randomized trigger gate; queued fan-outs via script.
+
   - 20251019-1200: Initial sample.
 
 mode: queued

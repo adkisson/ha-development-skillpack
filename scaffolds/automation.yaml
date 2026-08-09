@@ -4,12 +4,14 @@ description: >
 
   - Routes actions by trigger ID; no polling.
 
-  - Demonstrates: trigger-based decision tree, post-restart gate with randomized delay, and brains-vs-muscles pattern (sensor directives, automation routes).
+  - Demonstrates: trigger-based decision tree, post-restart gate with randomized delay, and routing by trigger ID.
 
   - Non-action paths stop explicitly for trace visibility.
 
 
   **CHANGELOG:**
+
+  - 20260809-1200: Removed "brains-vs-muscles pattern" from the description — that separation is a conditional Architecture-workflow decision in 2.0, not something the canonical automation scaffold should imply is standard.
 
   - 20260607-1200: Replaced invalid elif chain with choose; three trigger-ID branches are provably mutually exclusive. Removed default stop branch; unmatched triggers are silent by design. Fixed description formatting.
 

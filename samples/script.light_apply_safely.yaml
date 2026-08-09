@@ -1,18 +1,13 @@
 alias: Script – Light Apply Safely
 description: >
-  Centralized light apply with idempotent guard and standard transition.
-  Uses a brightness + power-state guard to avoid redundant device writes.
-  Safe for repeated calls and concurrent fan-out.
-  Resilience: continue_on_error is intentional to tolerate transient device/mesh errors;
-  idempotency guard prevents redundant writes even if a call fails.
+  Centralized light apply with idempotent guard and standard transition. Uses a brightness + power-state guard to avoid redundant device writes. Safe for repeated calls and concurrent fan-out. Resilience: continue_on_error is intentional to tolerate transient device/mesh errors; idempotency guard prevents redundant writes even if a call fails.
 
 
   **CHANGELOG:**
 
-  - 20251022-1600: Initial release. Aligned with Lighting ON/ADJUST paths.
+  - 20260102-1200: Added explicit input normalization, clamped brightness handling, unavailable-state guards, and GUI-safe structure.
 
-  - 20260102-1200: Added explicit input normalization, clamped brightness handling,
-    unavailable-state guards, and GUI-safe structure.
+  - 20251022-1600: Initial release. Aligned with Lighting ON/ADJUST paths.
 mode: queued
 max: 10
 

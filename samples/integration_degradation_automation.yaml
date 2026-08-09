@@ -1,6 +1,6 @@
 alias: "Directive: Respect Degradation"
 description: >
-  Executes a critical action only when data quality permits, with per-tier routing and manual override escape hatch. Non-action paths stop explicitly for trace visibility. Depends on companion template sensor: template_sensor_with_integration_degradation.yaml (sensor.directive_with_degradation).
+  Executes a critical action only when data quality permits, with per-tier routing and manual override escape hatch. Non-action paths stop explicitly for trace visibility. Depends on companion template sensor: template_sensor_with_integration_degradation.yaml (the degradation-aware directive sensor).
 
 
   **CHANGELOG:**

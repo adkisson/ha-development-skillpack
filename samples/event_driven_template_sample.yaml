@@ -22,6 +22,11 @@
 #       3) rgb_color derived from kelvin via a lookup
 #
 # CHANGELOG:
+# - 20260809-1200: Removed unexplained 5-minute time_pattern trigger — this
+#   sensor has no staleness/age tracking that needs periodic re-evaluation
+#   (unlike template_sensor_with_integration_degradation.yaml, where the
+#   equivalent trigger drives age_s); the lux and disable-toggle state
+#   triggers already cover every input this sensor reacts to.
 # - 20260115-1145: Simplified canonical sample (3 item shapes).
 # - 20260102-1200: Canonicalized header + organization guidance + JSON items contract.
 # - 20251019-0900: Initial example.
@@ -33,9 +38,6 @@ template:
         entity_id:
           - sensor.example_area_ambient_lux
           - input_boolean.example_area_lights_disable
-
-      - trigger: time_pattern
-        minutes: "/5"
 
       # Post-restart recovery (non-critical, staggered)
       - trigger: state

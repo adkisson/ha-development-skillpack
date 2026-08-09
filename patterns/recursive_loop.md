@@ -9,10 +9,10 @@ identical, with no condition preventing re-entry on the return write.
 
 ## ❌ Loop — no guard
 ```yaml
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: input_boolean.fan_override
-action:
+actions:
   - action: input_boolean.toggle
     target:
       entity_id: input_boolean.fan_override
@@ -20,15 +20,15 @@ action:
 
 ## ✅ Guarded — fires only on the intended transition
 ```yaml
-trigger:
-  - platform: state
+triggers:
+  - trigger: state
     entity_id: input_boolean.fan_override
     to: 'on'
-condition:
+conditions:
   - condition: state
     entity_id: input_boolean.fan_override
     state: 'on'
-action:
+actions:
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.fan_override

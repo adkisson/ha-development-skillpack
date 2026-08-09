@@ -1,22 +1,22 @@
 # Review & Checklist — How‑To + Rubric (Single Source of Truth)
 
-For new or novel work, complete `/guides/new_automation_intake.md`
-before opening a review. For bug fixes, use
-`/guides/systematic_debugging.md`. Review begins after the relevant
-intake or debugging step is complete. DTT validation is mandatory
-before deployment approval, but design or patch reviews may occur
-before DTT when the artifact is not yet ready to run.
+This is the completion-gate checklist for `workflows/development.md` and
+`workflows/refactor.md` — not a standalone review task. Structure decisions
+belong to `workflows/architecture.md`; root-cause work belongs to
+`workflows/debug.md`. DTT validation is mandatory before deployment
+approval, but design or patch reviews may occur before DTT when the
+artifact is not yet ready to run.
 
 ## Review Process Summary
 
 **Before starting**: surgical edits over rewrites — minimum diff footprint; rewrites require explicit approval.
 
-| Step | Gate | Hard stop? |
+| Step | Gate | Hard gate? |
 |------|------|------------|
 | 0 | **Security** — scan for secrets/identifying material | ✅ Yes |
 | — | **Pre-deployment validation triage** — scan for risk triggers requiring specific validation before deployment approval | |
 | 1 | **Impact classification** — Class A–D; determines rigor for all steps below | ✅ Yes for A/B without risk assessment |
-| 2 | **KISS** — simplest viable solution; 2–3 options presented for non-trivial problems | |
+| 2 | **KISS** — simplest viable solution; alternatives considered only where there's genuine ambiguity or a meaningful tradeoff | |
 | 3 | **Syntax & structure** — GUI-friendly YAML, plural keys, alias/note/description placement, comments policy | |
 | 4 | **DTT validation** — all Jinja and entity references proven before **deployment approval** | ✅ Yes for deployment |
 | 5 | **Traces** — orchestration/timing verified via Automation Traces where needed | |
@@ -25,17 +25,17 @@ before DTT when the artifact is not yet ready to run.
 | 8 | **Wait/timeout** — `wait_template` preferred; exclusion lists guard empty string | |
 | 9 | **Restart & recovery** — correct `for:` windows; no action delays for staggering | |
 | 10 | **Idempotency & chatter** — device call guards; batching; rate-limiting | |
-| 11 | **Overrides & safety** — manual/guest/safety modes confirmed to win | |
-| 12 | **Backward-compat** — last 12 months of breaking changes reviewed; confirm `BC review: done` or `BC review: N/A` | |
+| 11 | **Overrides & safety** — applicable manual/guest/safety precedence confirmed | |
+| 12 | **Backward-Incompatible review** — last 12 months of breaking changes reviewed; confirm `BC review: done` or `BC review: N/A` | ✅ Yes if applicable and unconfirmed |
 | 13 | **Changelog** — entry added in correct format and location | |
 | 14 | **Exceptions** — any deviations documented inline | |
 | 15 | **Blueprint validation** — if applicable | |
-| 16 | **HAF** — household UX impact reviewed; annoyance risk mitigated | ✅ Yes for shared spaces |
-| 17 | **Self-critique & grade** — A- minimum for production; verdict assigned | |
+| 16 | **HAF/UX** — reviewed wherever behavior is perceptible to, relied upon by, or controlled by a person; annoyance risk mitigated | ✅ Yes if unmitigated/undocumented |
+| 17 | **Self-critique & score** — weighted score + hard gates determine production-readiness; verdict assigned | |
 
-**Grading minimum**: A- for production deployment. Anything below requires fixes or explicit deferral with documented rationale.
+**Production-ready threshold**: all applicable hard gates pass, **and** weighted score is **≥90%** (see Production Readiness below). Anything below requires fixes or explicit deferral with documented rationale.
 
-Use section **A)** for the full flow, **A1)** for hard stops, **C)** for copy-paste checklists.
+Use section **A)** for the full flow, **A1)** for hard gates, **C)** for copy-paste checklists.
 
 ## Blocking Gate — Secret & Identifying Material
 - Compliant with `spec/security.md` (no secret or identifying material present).
@@ -55,7 +55,7 @@ Before deployment approval, scan for risk triggers that require specific validat
 - **Uses Jinja?** Confirm DTT validation and safe unavailable-state handling.
 - **Uses time/deadline logic?** Confirm timezone handling, restart resilience, and timer vs `input_datetime` selection.
 - **Calls cloud/API/integration services?** Confirm availability handling, bounded retry, cooldowns, and no reload/command storms.
-- **Affects shared spaces, sleep, comfort, safety, or household schedules?** Confirm HAF review.
+- **Is any part of the behavior perceptible to, relied upon by, or controlled by a person?** Confirm HAF/UX review — this is not limited to shared spaces or schedules; a private-room automation, a personal notification, a lock, or a manual-switch interaction all qualify.
 - **Refactors existing behavior?** Confirm surgical diff, preserved intent, and rollback path.
 
 ## A) Review Flow (Detailed)
@@ -65,22 +65,22 @@ Before deployment approval, scan for risk triggers that require specific validat
 
 1) **System Impact Classification**
    - Classify by worst-credible failure impact using `/guides/system_impact_class.md`.
-   - Record class, worst-credible failure mode, and any Context Elevation reasoning. Class A/B without completed risk assessment is a hard stop.
+   - Record class, worst-credible failure mode, and any Context Elevation reasoning. Class A/B without completed risk assessment is a hard gate.
 
 2) **KISS Gate**
-   - Choose the simplest robust path. For non-trivial problems, compare 2–3 viable options.
-   - Reject speculative complexity not required by the stated intent. See `/guides/architecture_principles.md`.
+   - Choose the simplest robust path. Consider alternatives only when there's genuine design ambiguity or a meaningful tradeoff — present the alternatives that materially differ in behavior, complexity, resilience, maintainability, safety, or HAF/UX. Don't manufacture options to satisfy a quota: one clearly-dominant recommendation with brief rationale is sufficient for trivial or obvious cases.
+   - Reject speculative complexity not required by the stated intent. See `/workflows/architecture.md`.
 
 3) **Syntax & Structure**
    - Use current release -1 YAML/Jinja standards; reject deprecated or "also works" syntax.
    - GUI-friendly YAML, plural keys, alias/note/description placement, comments policy, trigger rules, and changelog rules per `spec/yaml_style.md`.
 
 4) **DTT Probes — Mandatory Before Deployment Approval**
-   - Validate Jinja logic and entity references before deployment approval. See `/guides/dtt_first_validation.md`.
-   - If DTT passes but deployed behavior fails, switch to `/guides/systematic_debugging.md`.
+   - Validate Jinja logic and entity references before deployment approval. Entity references must be mechanically validated — not inferred, not handed back to the user for manual one-by-one checking. See `/guides/dtt_first_validation.md`.
+   - If DTT passes but deployed behavior fails, switch to `/workflows/debug.md`.
 
 5) **Traces vs DTT**
-   - DTT proves template logic; Automation Traces verify orchestration/timing only when needed.
+   - DTT proves template/state logic; it does not prove orchestration or actuation. Automation Traces verify orchestration/timing; live tests verify actuation. Use the surface that actually proves the behavior in question, not DTT by default.
 
 6) **Live Test**
    - Exercise a happy-path trigger when feasible. Observe Logbook only for significant events.
@@ -103,7 +103,7 @@ Before deployment approval, scan for risk triggers that require specific validat
     - Guard device calls; batch by group/area; rate-limit noisy inputs; minimal bounded retry.
 
 11) **Overrides & Safety**
-    - Manual/guest/safety modes always win. See `/spec/safety.md`.
+    - Manual/guest/safety modes always win where applicable. See `/spec/safety.md`.
 
 12) **Backward-Incompatible Changes**
     - Review last 12 months of HA breaking changes when applicable. Response must confirm `BC review: done` or `BC review: N/A`.
@@ -117,30 +117,13 @@ Before deployment approval, scan for risk triggers that require specific validat
 15) **Blueprint Validation (if used)**
     - Confirm compliance with the official Home Assistant blueprint schema and validate at least one instantiated artifact against all standard automation/script expectations before approval.
 
-16) **Household UX / Annoyance Risk Review (HAF) completed**
-    - Confirm the change does not introduce new human-impact failure modes. High-impact risks must be mitigated, documented as accepted tradeoffs, or the change must not ship.
+16) **HAF/UX Review**
+    - HAF/UX applies wherever behavior is perceptible to, relied upon by, or controlled by a person — lighting (including private rooms), HVAC, locks/access/security, manual switches, notifications, media, presence-driven behavior, appliances, and anything with override or recovery behavior. It is not limited to shared spaces or schedules.
+    - This step is the **final verification**, not the first consideration — HAF/UX should already have shaped the design in Ideation, Architecture, and Development. Confirm the completed behavior still satisfies the HAF/UX assumptions that shaped it, and that no new human-impact failure mode was introduced. High-impact risks must be mitigated, documented as accepted tradeoffs, or the change must not ship.
 
 17) **Self-Critique & Verdict**
     - Confirm no TODOs/placeholders, contradictions, scope expansion, unresolved ambiguity, or intent mismatch.
-    - Document risks, alternatives, rollback, verdict, and letter grade. A- is minimum for production deployment.
-
-      **Grading scale:**
-      - **A** — fully Skill Pack compliant; passes all checklists; HAF
-        clear; DTT validated; no caveats
-      - **A-** — production-ready with one intentional, documented
-        deviation that poses zero reliability, safety, or HAF risk;
-        deployable as-is; a future session will know exactly why it
-        is the way it is
-      - **B** — deployable but has known unintentional or undocumented
-        debt that is not production or outcome critical; deploy now,
-        fix in a follow-up session
-      - **C** — needs revision before shipping; reliability, safety,
-        HAF, or Skill Pack compliance issues present that are fixable
-        in session
-      - **D** — significant architectural or safety issues; requires
-        redesign, not just fixes; do not ship as-is
-      - **F** — hard stop; secrets present, Class A/B safety violation,
-        or fundamental design failure
+    - Score production readiness per **Production Readiness** below; document risks, alternatives, rollback, the score breakdown, and verdict.
 
 ### Optional Safety-Level Summary
 When useful, summarize the highest safety level demonstrated:
@@ -151,37 +134,110 @@ When useful, summarize the highest safety level demonstrated:
 - **L3 — Steward Safe:** edits are surgical; entity IDs, aliases, comments, scope, and user intent are preserved.
 - **L4 — Operator Safe:** live validation surfaces such as config check, traces, logs, or Developer Tools confirm behavior.
 
-This summary does not replace the Skill Pack checklist, verdict, or grade.
+This summary does not replace the Skill Pack checklist, verdict, or score.
 
 ---
 
-## A1) Hard Stop — Do Not Approve If Any Are True
+## A1) Hard Gates — Do Not Approve If Any Are True
 
-- [ ] DTT validation not completed before deployment
-- [ ] Entity references not confirmed through appropriate validation: defined-entity checks where existence matters; `has_value()` where usable state matters
-- [ ] Behavior not defined in observable HA state terms
-- [ ] Restart and unavailable-entity behavior undefined
-- [ ] Manual override interactions not accounted for
-- [ ] Class A/B artifact without completed risk assessment
-- [ ] HAF review not completed for artifacts affecting shared spaces or household schedules
+Any one of these blocks production-ready status **regardless of weighted score**.
+
+- [ ] **Security/safety defect** — secrets or identifying material present (`spec/security.md`); or a known safety defect (e.g. missing min-run/min-off on a critical actuator, missing override precedence) per `spec/safety.md`.
+- [ ] **Unverified entity reference** — any entity reference not mechanically validated (defined-entity check where existence matters; `has_value()` where usable state matters) per `guides/dtt_first_validation.md` — not inferred, not handed back to the user for manual one-by-one checking.
+- [ ] **Required behavioral validation incomplete or failed** — DTT not run where it can exercise the logic; orchestration/timing not confirmed via Traces or a live test where those are the relevant surface; restart and unavailable-entity behavior undefined.
+- [ ] **Behavior materially differs from the agreed requirement** — implementation doesn't match the approved design, or success isn't expressible/confirmed in observable HA-state terms.
+- [ ] **Applicable Backward-Incompatible review not completed** — `BC review: done` or `BC review: N/A` not confirmed per `spec/runtime.md`.
+- [ ] **Unacceptable Class A/B failure behavior** — Class A/B artifact without a completed risk assessment, or manual override/safety-coordinator interaction not accounted for.
+- [ ] **Material HAF/UX problem** — a human-perceptible or human-controlled behavior issue left unmitigated, undocumented, or unaccepted as a tradeoff.
 
 ---
+
+## Production Readiness — Weighted Score + Hard Gates
+
+Replaces the old letter-grade model. The score exists to force explicit
+self-reflection and expose where points were lost — not to create false
+precision.
+
+**Production-ready requires both:**
+- All applicable hard gates (A1, above) pass, **and**
+- Weighted score is **≥90%**.
+
+### Categories & Weights
+
+| Category | Weight |
+|---|---|
+| Correctness & behavioral fidelity | 25% |
+| Safety, authority & failure handling | 20% |
+| Validation & evidence | 20% |
+| HAF / UX | 15% |
+| Simplicity & architecture | 10% |
+| Maintainability & HA quality | 10% |
+
+### Category Anchors — What a 5 Looks Like
+
+One sentence per category so a `5` requires an actual threshold, not a
+hand-wave:
+
+- **Correctness & behavioral fidelity** — all stated behavior demonstrated; no unresolved mismatch between the agreed requirement and the implementation.
+- **Safety, authority & failure handling** — override/safety precedence correct and verified; restart, unavailable, and degraded-state behavior handled with no unacceptable Class A/B exposure.
+- **Validation & evidence** — all entity references mechanically verified; every relevant behavior surface (DTT, Traces, live test) tested against the surface it actually proves, including a falsifying case where branching/threshold/fallback logic is present.
+- **HAF / UX** — no material human-impact concern remains unmitigated or unaccepted; completed behavior matches what a person would naturally expect.
+- **Simplicity & architecture** — the simplest construct tier and structure that fully solves the problem; no complexity beyond what the requirement justifies.
+- **Maintainability & HA quality** — YAML/Jinja standards, naming, comments policy, and changelog all compliant; a future session can maintain this without archaeology.
+
+A score below 5 in a category should be traceable to which part of its
+anchor wasn't met — that's what "residual weaknesses" in the Review Output
+should name.
+
+### Scoring Scale (0–5 per category)
+
+- **5** — fully satisfied, evidence-backed
+- **4** — minor non-material weakness
+- **3** — meaningful compromise or weakness
+- **2** — material deficiency
+- **1** — seriously deficient
+- **0** — absent, failed, or contradicted
+
+**Weighted % = Σ (score ÷ 5 × category weight).** If a category is
+genuinely not applicable to this artifact (e.g. no HA-perceptible behavior
+exists to review for HAF/UX), remove it from both the numerator and the
+denominator and re-normalize the remaining weights to sum to 100% — do not
+award it free credit by leaving its weight in the total unscored.
+
+### Review Output
+
+State explicitly:
+- The category breakdown — score and one-line rationale per category.
+- The total weighted score.
+- Hard-gate status — pass, or name every gate that failed.
+- Residual weaknesses — what specifically cost points, even at a passing
+  score.
 
 ## B) Verdicts
-- **Production‑ready** · **Low‑risk w/ notes** · **Needs revision** · **Do not ship**
+
+Verdict follows from hard-gate status and weighted score — not a separate
+holistic call:
+
+- **Production-ready** — all hard gates pass and score ≥90%.
+- **Low-risk w/ notes** — all hard gates pass, score 75–89%, residual
+  weaknesses documented.
+- **Needs revision** — all hard gates pass but score <75%, or a hard gate
+  fails on something fixable in this session.
+- **Do not ship** — a hard gate fails on something not fixable in this
+  session, or the score reflects a fundamental issue.
 
 ## C) Copy‑Paste Checklists
 ### Master
-- [ ] KISS & scope confirmed; simpler alternative considered and ruled out; no complexity added beyond current requirements
+- [ ] KISS & scope confirmed; alternatives considered only where genuine ambiguity or a meaningful tradeoff existed (not manufactured to hit a quota); no complexity added beyond current requirements
 - [ ] GUI-friendly automation/script YAML; `alias:` confirmed at schema-supported levels within automations/scripts; `description:` confirmed for automations/scripts; schema-supported naming/documentation confirmed for YAML-defined entities; `id:` per automation trigger; `alias:` confirmed absent from template sensors, input helpers, arbitrary variable mappings, and other YAML-defined entities.
 - [ ] `max_exceeded: silent` evaluated for automations that fire frequently or have significant risk of exceeding `max`
 - [ ] **Comments policy**: automations/scripts confirmed comment-free — GUI strips comments silently; artifact-level context in `description:`; concise trace identity in nested `alias:`; non-obvious step-level rationale in nested `note:` where schema-supported. Template sensors confirmed with `# CHANGELOG:` and commented `#debug_*` attributes. AppDaemon comments for complex logic only.
 - [ ] **Startup triggers** confirmed only where post-restart actions needed (state recovery, initialization); not present for passive automations
-- [ ] Brains vs muscles confirmed; scripts for fan‑outs; concurrency verified sane
-- [ ] **Construct selection confirmed:** choose used only for provably mutually exclusive branches (discriminated by trigger ID, entity state, or other HA-native discriminator); if/then/else used for prioritized execution where conditions may overlap; no elif in YAML
+- [ ] Any required state/actuation boundary is clear and appropriate to the design — no template-sensor "brain" forced onto work a simple native automation already expresses clearly and safely; scripts used for fan‑outs; concurrency verified sane
+- [ ] **Construct selection confirmed:** purpose-specific native construct preferred where it directly expresses intent and preserves the correct targeting/authority semantics, falling back to a generic native construct, then a template-based one, only as each preceding option fails to fit — see `guides/construct_selection.md`; `choose` used only for provably mutually exclusive branches (discriminated by trigger ID, entity state, or other HA-native discriminator); if/then/else used for prioritized execution where conditions may overlap; no elif in YAML
 - [ ] **Execution gating confirmed:** automations gate on positive evidence — no action executes unless all required conditions are provably met; default to no action on uncertainty
 - [ ] Restart gates confirmed on triggers (`timer.ha_startup_delay` w/ appropriate `for:`); no action delays present
-- [ ] State trigger `to:`/`from:` and event trigger `event_type:` confirmed as **literal string matches only** — never Jinja; `for:` confirmed accepts Jinja where used; `platform: template` + `value_template:` used for evaluated expressions
+- [ ] State trigger `to:`/`from:` and event trigger `event_type:` confirmed as **literal string matches only** — never Jinja; `for:` confirmed accepts Jinja where used; `trigger: template` + `value_template:` used for evaluated expressions
 - [ ] Jinja safety confirmed: safe defaults present (`| float(0)`, `| int(0)`)
 - [ ] Python method use reviewed: no methods on HA-returned or JSON-derived objects; `.get()` / `.items()` allowed only on known literal dicts per `snippets/jinja_patterns.md`; `.total_seconds()` avoided except for guarded `.last_changed` / `.last_updated` staleness/age semantics
 - [ ] No direct state-object access confirmed except `.last_updated` / `.last_changed` for staleness/age; guarded and used only for time semantics
@@ -200,8 +256,8 @@ This summary does not replace the Skill Pack checklist, verdict, or grade.
 - [ ] Wait strategies confirmed: `wait_template` used where applicable; exclusion lists guard empty string; `continue_on_timeout: true` present
 - [ ] Backward-incompatible changes (12 months) reviewed and confirmed
 - [ ] Exceptions documented inline using the artifact's supported documentation channel (`description:`/`alias:`/`note:` for automations/scripts where schema-supported; comments for YAML-defined entities)
-- [ ] Risks/alternatives/rollback documented; letter grade assigned; verdict chosen
-- [ ] Household UX / Annoyance Risk Review (HAF) completed (see sub-checklist)
+- [ ] Risks/alternatives/rollback documented; weighted score breakdown and hard-gate status recorded; verdict chosen
+- [ ] HAF/UX reviewed for any behavior perceptible to, relied upon by, or controlled by a person (see sub-checklist) — confirmed as final verification of assumptions already made earlier in the workflow, not first consideration
 
 ### Automation Sub‑Checklist
 - [ ] Minimal, precise triggers; unique `id` and `alias`
@@ -230,7 +286,7 @@ This summary does not replace the Skill Pack checklist, verdict, or grade.
 
 ### Template Sensor Sub‑Checklist
 - [ ] Minimal trigger set + HA startup gate
-- [ ] Clear directive state + `reason` attribute
+- [ ] Clear directive state + `reason` attribute — where the sensor is used as a directive/decision surface for downstream automations; not required for a plain display/utility sensor with no downstream decision logic
 - [ ] Safe reads; expected commented `#debug_*` attributes present
 - [ ] Accumulating dict-merge sensors: byte-length pre-check before commit (`proposed | tojson | length > 16384`)
 
@@ -256,8 +312,12 @@ This summary does not replace the Skill Pack checklist, verdict, or grade.
 - [ ] No templated randomization in critical paths (or documented as accepted tradeoff)
 - [ ] Post-restart gates use <10s fixed for: for critical paths (safety/security); 45–75s random for: for non-critical (prevents thundering herd)
 
-### Household UX / Annoyance Risk Sub-Checklist *(aka Household Acceptance Factor – HAF)*
-**This review is performed AFTER all technical, structural, and safety checks are complete.**
+### HAF/UX Sub‑Checklist *(Household Acceptance Factor)*
+**This sub-checklist is the final verification that completed behavior still
+matches the HAF/UX assumptions established earlier in the workflow
+(Ideation, Architecture, Development) — not the first time HAF is
+considered.** Applies to any behavior perceptible to, relied upon by, or
+controlled by a person — not only shared spaces or schedules.
 
 - [ ] False-trigger probability evaluated
 - [ ] Oscillation / repeated toggle risk evaluated

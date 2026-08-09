@@ -1,20 +1,19 @@
 # Option Matrix – Decision Template
 
-> Use this when a problem has multiple viable designs. Keep KISS in mind: the goal is to surface 3–5 options, compare crisply, and choose the simplest robust path.
+> Use this only when a problem has genuine design ambiguity or a meaningful tradeoff between viable approaches — not as a default step. Keep KISS in mind: compare crisply and choose the simplest robust path. List only the options that materially differ; don't pad the list to hit a count.
 
 ## Problem Statement
 One sentence on what we’re solving and constraints.
 
-## Candidate Options (3–5)
+## Candidate Options
 1. Option A — short name
 2. Option B — short name
-3. Option C — short name
 
 ## Criteria & Weights (sum to 100)
 - Simplicity (KISS): 30
 - Reliability (restarts, idempotency): 20
 - Chatter/perf impact: 15
-- Maintainability (brains vs muscles, reuse): 15
+- Maintainability (state/actuation boundary clarity where relevant, reuse): 15
 - UX/observability (logging, reason attrs): 10
 - Time-to-ship: 10
 

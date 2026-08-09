@@ -88,13 +88,13 @@ Bad:
 
 **Debounce & windows**:
 - Use `for:` windows on triggers rather than delays in actions.
-- Specify `to:`/`from:` for booleans to avoid accidental oscillations.
+- For boolean entities, specify `to:`/`from:` when only one transition is intended. Omit them intentionally when both transitions must trigger recomputation (e.g. a template sensor that needs to react to a boolean helper turning either on or off) — document why inline when it isn't obvious from context.
 - Restart staggering on `timer.ha_startup_delay → idle`: critical **<10s fixed**; non-critical **45–75s randomized**.
 - Startup triggers only when post-restart actions are needed (state recovery, guard initialization). Avoid for passive/event-driven automations.
 
 **Template complexity in triggers**:
 - Trigger `for:` blocks have reduced template context; keep them simple. Move complex calculations to template sensors or action variables.
-- `to:`/`from:` in state triggers and `event_type:` in event triggers are **literal string matches** — Jinja placed there is never evaluated and the trigger silently never fires. `for:` does accept Jinja. Use `platform: template` with `value_template:` for any expression requiring evaluation.
+- `to:`/`from:` in state triggers and `event_type:` in event triggers are **literal string matches** — Jinja placed there is never evaluated and the trigger silently never fires. `for:` does accept Jinja. Use `trigger: template` with `value_template:` for any expression requiring evaluation.
 
 **Device-specific triggers**:
 - Prefer state triggers on specific entities over generic event broadcasts (e.g., `zwave_js_value_notification`). Eliminates Z-Wave bus overhead and reduces latency.

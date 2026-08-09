@@ -409,7 +409,7 @@ Move complex logic to template sensors or action templates.
 **❌ Invalid**
 
 ``` yaml
-condition:
+conditions:
   - alias: Reject when X is not 'on'
     state_not: 'on'
     entity_id: input_boolean.x
@@ -418,7 +418,7 @@ condition:
 **✅ Valid**
 
 ``` yaml
-condition:
+conditions:
   - alias: Reject when X is not 'on'
     condition: not
     conditions:
@@ -462,6 +462,12 @@ silently returns `None` or errors.
 
 **Note:** If the label/area might be empty, guard with a length check
 before iterating to avoid silent no-ops.
+
+**Bounded vs domain-wide**: prefer a label/area/group entity set (above)
+over iterating `states.<domain>` (e.g. `states.light`) in templates
+evaluated frequently — domain-wide iteration re-scans every entity of that
+type on every evaluation. See `spec/performance.md` for when domain-wide
+iteration is actually the right call.
 
 ------------------------------------------------------------------------
 

@@ -5,8 +5,9 @@
 
 ---
 
-## ⚠️ Upcoming restructure
-This skill pack has grown large enough to warrant a structural review. A refactor is planned that will reorganize guides, trim scope, and potentially split companion content into separate referenced skills. If you are forking or building on this, expect breaking changes to file paths and structure in an upcoming version.
+## ⚠️ 2.0.0 restructure
+
+Version 2.0.0 reorganized the pack around five reasoning-state workflows (`workflows/ideation.md`, `architecture.md`, `development.md`, `debug.md`, `refactor.md`) routed from `SKILL.md`, replacing the old task-mode router and Session Modes, while reframing Architect/Dev as an orthogonal planning/execution role axis rather than dropping it. Several 1.x guides were retired and their content absorbed into the new workflow files. 2.0.0 also reduces procedural scaffolding in favor of outcome-, invariant-, and evidence-driven guidance intended for newer reasoning-capable models; behavior may differ with smaller or self-hosted LLMs. If you forked or built on a pre-2.0.0 version, expect breaking changes to file paths, structure, and prompting assumptions — see `changelog.md` for specifics.
 
 ## What this is
 
@@ -42,15 +43,13 @@ As my desire for HA functionality far outstripped my own ability to code (or eve
 
 ## How I Use This Skill
 
+I use this Skill across several prompt sessions — sometimes with different AI models.
 
-I use this Skill across three prompt sessions — sometimes with different AI models.
+First, I ask one AI to act as architect — planning whatever the problem actually needs, whether that's a full design, a debugging strategy, or a one-line note that a change is trivial: discuss it in plain English, present options with tradeoffs, identify potential flaws and shortcomings, pressure-test the approach before any code is written, and document testing/acceptance criteria. The goal is to surface and resolve design problems early — not after they're baked into YAML.
 
-First, I ask the AI to act as architect: discuss the design in plain English, present options with tradeoffs, identify potential flaws and shortcomings, pressure-test the approach before any code is written, and document testing/acceptance criteria. The goal is to surface and resolve design problems early — not after they're baked into YAML.
+Second, I ask it (often a different model) to act as dev: review the design and push back on implicit assumptions, then implement the agreed design and validate it in Developer Tools before I call it done.
 
-Second, I ask it to 1) review the design and resolve questions or push back on implicit assumptions, and 2) implement the agreed design using these rules.
-
-Third, I ask it to act as a grumpy senior reviewer — focused on yaml/jinja correctness, fit to design, restart behavior, unaddressed edge cases, and strict adherence to the Skill. This session tries to break the code.
-
+If something already built breaks, that's a separate debugging pass — root cause first, no quick patches. If I just want existing behavior cleaned up without changing it, that's a separate refactor pass.
 
 Each step feeds back into the previous as needed — design is pressure-tested before coding begins, and code is pressure-tested before it ships.
 

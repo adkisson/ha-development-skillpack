@@ -1,5 +1,5 @@
 ##########
-# Template Sensor – Brains Scaffold (CANONICAL)
+# Template Sensor Scaffold (CANONICAL)
 #
 # ORGANIZATION: This example uses a `template:` block. Whether you need it depends
 # on your include context:
@@ -10,12 +10,21 @@
 # See your configuration includes to determine which applies.
 #
 # PURPOSE:
-#   Encapsulates business logic and emits a clear directive that automations/scripts consume.
-#   Keep actions out of templates; this is computation only.
-#   Single-read variables ensure consistency; state is atomic; `reason` attribute explains "why".
+#   Computes a value or state for automations/scripts to consume — no actions,
+#   computation only. This scaffold shows the fuller pattern (a `reason`-bearing
+#   directive treated as non-authoritative output); trim the `reason` attribute
+#   and decision-surface framing for a plain sensor with no downstream decision
+#   logic riding on it. Whether separating this computation from actuation is
+#   warranted at all is a workflows/architecture.md call, not a default — see
+#   guides/construct_selection.md.
+#   Single-read variables ensure consistency; state is atomic.
 #   Re-evaluates after the canonical startup delay; no immediate startup decision.
 #
 # CHANGELOG:
+# - 20260809-1200: Generalized from "Brains Scaffold" framing — state/actuation
+#   separation is a conditional Architecture-workflow decision in 2.0, not a
+#   mandatory pattern; this remains one useful shape among several, not the
+#   only correct one.
 # - 20260607-1200: Removed homeassistant start trigger; timer-only bootstrap per restart doctrine.
 #   Added for: stagger to timer trigger (non-critical 45-75s randomized).
 #   Removed stale HA version stamp from changelog.

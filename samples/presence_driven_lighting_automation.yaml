@@ -1,8 +1,8 @@
 alias: Automation – Example Area Lights Follow Presence
 description: >
-  Presence-driven area lighting using a centralized targets sensor and apply scripts. Trigger-level `for:` provides OFF stickiness; manual override wins. Manual override detection watches main light only; accent adjustments are not tracked. Chatter-control timestamp (input_datetime.example_area_last_auto_apply) gates override detection — not a deferred-intent deadline.
+  Presence-driven area lighting using a centralized targets sensor and apply scripts. Trigger-level `for:` provides OFF stickiness; manual override wins. Manual override detection watches main light only; accent adjustments are not tracked. Chatter-control timestamp (the area's last-auto-apply helper) gates override detection — not a deferred-intent deadline.
 
-  Depends on companion template sensor: presence_driven_lighting_targets.yaml (sensor.example_area_lighting_targets).
+  Depends on companion template sensor: presence_driven_lighting_targets.yaml (the area's lighting-targets sensor).
 
 
   **CHANGELOG:**

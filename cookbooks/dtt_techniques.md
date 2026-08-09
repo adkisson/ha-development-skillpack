@@ -24,7 +24,7 @@ Run a dedicated pre-flight before building the main probe. One
 
 ```jinja
 {# Pre-flight: validate all entities used in this artifact #}
-{{ has_value('sensor.rob_s_bedroom_temp') }}
+{{ has_value('sensor.kid_s_room_temp') }}
 {{ has_value('binary_sensor.front_door') }}
 {{ has_value('input_boolean.guest_mode') }}
 ```
@@ -37,7 +37,7 @@ If a naming issue is suspected, attempt discovery before stopping:
 
 ```jinja
 {# Surface candidates by area, label, or integration #}
-{{ area_entities('Rob\'s Bedroom') | list }}
+{{ area_entities('Kid\'s Room') | list }}
 {{ label_entities('climate') | list }}
 {{ integration_entities('zwave_js') | list }}
 ```
@@ -214,15 +214,15 @@ mocks inline.
 
 ```jinja
 {# --- SECTION 4: smoke only — expected: one smoke line        #}
-{# Case: Den smoke=true, CO=false                              #}
-{% set mock_detector = 'Den Smoke Detector' %}
+{# Case: Living Room smoke=true, CO=false                      #}
+{% set mock_detector = 'Living Room Smoke Detector' %}
 {% set mock_smoke = true %}
 {% set mock_co = false %}
 ...logic using mock_detector, mock_smoke, mock_co...
 
 {# --- SECTION 5: CO only — expected: one CO line              #}
-{# Case: Casita CO=true, smoke=false                           #}
-{% set mock_detector = 'Casita Living Room Smoke Detector' %}
+{# Case: Garage CO=true, smoke=false                           #}
+{% set mock_detector = 'Garage Smoke Detector' %}
 {% set mock_smoke = false %}
 {% set mock_co = true %}
 ...same logic block, different inputs...

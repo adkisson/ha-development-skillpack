@@ -1,4 +1,24 @@
 ## Changelog
+## 2.0.0 - 20260809
+- `SKILL.md` rebuilt around a five-workflow reasoning-state router (Ideation/Architecture/Development/Debug/Refactor), replacing the task-mode router and Session Modes.
+- Added a Collaboration Baseline (owner authority, evidence-based pushback, surfacing uncertainty) and an Architect/Dev role axis orthogonal to workflow selection; calibration examples live in new `guides/architect_dev_roles.md`.
+- Retired `guides/exploratory_mode.md`, `new_automation_intake.md`, `architecture_principles.md`, `systematic_debugging.md`; content absorbed into `workflows/*.md`.
+- Added `guides/construct_selection.md`: single decision ladder (previously duplicated), native tier reordered purpose-specific → generic native → template, with an entity-targeting-authority rule. Corrected against current HA docs to distinguish HA's own 2025.12/2026.7 purpose-specific trigger/condition system from longstanding constructs like `sun`/`zone`/`device`.
+- Added `guides/artifact_authority.md`: Samples & Scaffolds doctrine plus a placeholder-entity exemption from the anti-hallucination gate.
+- `guides/review_and_checklist.md`: replaced the A–F letter grade with a weighted score (six categories) plus a hard-gate list; broadened HAF/UX beyond "shared spaces/schedules" and made it a standing invariant rather than a final-step-only check; removed fixed-option-count ceremony; softened absolute override wording.
+- `guides/dtt_first_validation.md`: added a falsifiability requirement; entity validation and logic validation are now separate obligations.
+- `spec/performance.md`: added a bounded domain-wide state-iteration rule. `spec/yaml_style.md`: softened the boolean `to:`/`from:` rule to allow deliberate dual-transition recompute.
+- Sample/scaffold consistency sweep: removed entity IDs from automation descriptions; fixed changelog formatting in two samples; generalized `scaffolds/template_sensor.yaml` and `automation.yaml` off mandatory brains/muscles framing; removed an unexplained polling trigger.
+- Syntax sweep: replaced residual deprecated `platform: template`/`platform: state`/singular top-level `trigger:`/`condition:`/`action:` with current `trigger: template` and plural `triggers:`/`conditions:`/`actions:` across `spec/yaml_style.md`, `guides/construct_selection.md`, `guides/review_and_checklist.md`, `patterns/recursive_loop.md`, and `snippets/jinja_patterns.md`; unwrapped two remaining multi-line description paragraphs in samples.
+- Updated cross-references throughout to point at the new workflow files.
+- Fixed `workflows/debug.md`'s exit boundary to match the Task Router: Debug ends at demonstrated root cause and hands off to Development/Refactor/Architecture for the correction, rather than staying open through implementation and revalidation.
+- Standardized "Backward-compat(ibility)" prose to "Backward-Incompatible" terminology (`BC review` shorthand unchanged); scoped Development's BC requirement to "where applicable" to match the hard gate.
+- Softened the glossary's Brains vs Muscles entry from a universal definition to an explicitly conditional pattern.
+- Restored the 1.x doctrine that community sources (Reddit, forums, blogs) inform troubleshooting but aren't authoritative for HA syntax/schema, in `spec/runtime.md`.
+- Removed personal/instance-specific examples from `cookbooks/dtt_techniques.md` and `guides/dtt_first_validation.md` (generic placeholders now, apostrophe-conversion lesson preserved).
+- Fixed `tools/lint_templates.sh`: removed two patterns that flagged the pack's own recommended `| float(0)`/`| int(0)` filters as violations, narrowed the direct-state-access check to actual attribute access (was also flagging the recommended defined-entity check), and stopped matching inside full-line comments — it failed against the pack's own canonical samples before this fix.
+- Fixed `tools/entity_snapshot.sh`: now actually resolves area names (entity-level override, else inherited from device) as its header always claimed; fixed a latent crash on any entity with no `device_id`. Both tool scripts changed from mode 0777 to 0755.
+- Breaking change to file paths and structure relative to 1.x, per the restructure notice carried in the 1.0.1 README.
 ## 1.0.1 - 20260622
 - 20260622-1600: Added automation/script nested `note:` guidance for schema-supported triggers, conditions, and actions; clarified `alias:` as trace identity and `note:` as maintenance rationale.
 ## 1.0.0 - 20260607

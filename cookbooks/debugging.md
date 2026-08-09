@@ -1,7 +1,7 @@
 # Debugging Cookbook
 
 Quick-reference card for HA debugging tools and techniques.
-For the full debugging methodology, see `guides/systematic_debugging.md`.
+For the full debugging methodology, see `workflows/debug.md`.
 For DTT validation patterns, see `cookbooks/dtt_techniques.md`.
 
 ---
@@ -13,11 +13,11 @@ For DTT validation patterns, see `cookbooks/dtt_techniques.md`.
   `guides/dtt_first_validation.md` for the full validation cycle.
 - **Automation Traces**: orchestration only — trigger firing,
   condition sequence, action execution. See
-  `guides/systematic_debugging.md` for when and how to use traces.
+  `workflows/debug.md` for when and how to use traces versus DTT.
 - **Logbook / History**: first move for intermittent failures —
   check entity state history over the failure window before
-  attempting reproduction. See `guides/systematic_debugging.md`
-  Phase 1 for guidance.
+  attempting reproduction. See `workflows/debug.md`
+  for guidance on matching evidence to failure surface.
 - **Configuration → YAML editor**: review raw automation, script,
   and template sensor structure without the GUI abstracting it.
 

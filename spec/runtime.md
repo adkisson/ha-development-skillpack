@@ -20,6 +20,8 @@ The **reviewer or developer** must confirm the outcome in their **summary** (not
 
 > ⚠️ Never copy syntax, examples, or patterns from external sources without first confirming they are valid against the current HA Core version. Model training data lags — official HA documentation is the authoritative source.
 
+Community sources (Reddit, HA forums, blogs) may inform troubleshooting, known issues, and integration-specific gotchas, but are not authoritative for HA syntax, schema, or supported usage — confirm against official documentation before relying on them.
+
 ## Attribute Size Limit (16,384 Bytes)
 
 HA's recorder silently drops the entire attribute blob for an entity if

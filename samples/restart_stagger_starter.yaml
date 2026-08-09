@@ -2,7 +2,7 @@ alias: Automation – Post-Restart Recovery Gates
 description: >
   Two-tier post-restart recovery: critical paths (security, safety) execute within 7 seconds; non-critical sensor/directive updates stagger across 45–75 seconds to avoid thundering-herd load spikes. Demonstrates trigger-level `for:` (no action delays) and branching via trigger IDs. Resilience: randomized non-critical delay flattens startup load; critical paths prioritize perimeter/life-safety.
 
-  **Requires: timer.ha_startup_delay must be defined and started by your HA startup infrastructure.**
+  **Requires: the canonical startup-delay timer must be defined and started by your HA startup infrastructure.**
 
   **CHANGELOG:**
 

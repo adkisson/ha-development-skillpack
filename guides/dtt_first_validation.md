@@ -31,6 +31,22 @@ Applies to:
 - Any computed value driving automation behavior
 - Bug fixes that touch templates or conditions
 
+## Two Obligations: Entity Validation and Logic Validation
+
+DTT validation is two separate obligations, not one. Completing one does
+not satisfy the other.
+
+- **Entity validation**: every referenced entity must be mechanically
+  verified to exist (Step 3, below) — not inferred, and not handed back to
+  the user to check one by one.
+- **Logic validation**: where DTT can exercise the template/state logic,
+  the test must be falsifiable and must demonstrate the logic behaves
+  correctly — not merely that it renders (Step 2, below).
+
+Entity-existence validation alone does not prove behavioral correctness. A
+template that references only confirmed, existing entities can still
+compute the wrong answer.
+
 ## The Validation Cycle
 
 ### Step 1 — State Expectations Explicitly
@@ -70,14 +86,27 @@ to simulate those states.
 See `cookbooks/dtt_techniques.md` for combined expression patterns
 and degraded-state mock examples.
 
+**Falsifiability requirement.** A validation test must be capable of
+failing for at least one plausible incorrect implementation. Do not treat a
+test as sufficient merely because expected text, an entity ID, or a
+configuration fragment appears in the rendered output — that shows the
+template rendered, not that its logic is correct.
+
+For logic with branching, thresholds, precedence, fallback behavior, or
+overrides: test the expected path **and** at least one materially
+different state, boundary, or negative case that would expose an incorrect
+implementation. A threshold condition validated only against a value that's
+obviously above the threshold hasn't been tested — validate a value near
+the boundary too.
+
 ### Step 3 — Confirm Entity References
 
 Every entity referenced in the artifact must be validated explicitly
 before deployment. Do not rely on naming conventions, inferred
 corrections, or assumed spelling — entity naming in real systems is
 messy: possessive apostrophes become underscores (HA converts `'`
-to `_`, so "Rob's Bedroom" becomes `rob_s_bedroom`, not
-`robs_bedroom`); real names, nicknames, and abbreviations are used
+to `_`, so "Kid's Room" becomes `kid_s_room`, not
+`kids_room`); real names, nicknames, and abbreviations are used
 inconsistently across devices; integrations may append suffixes or
 modify names on re-pairing.
 
@@ -87,7 +116,7 @@ modify names on re-pairing.
 
 ```jinja
 {# Validate all entities used in this artifact #}
-{{ has_value('sensor.rob_s_bedroom_temp') }}
+{{ has_value('sensor.kid_s_room_temp') }}
 {{ has_value('binary_sensor.front_door') }}
 {{ has_value('input_boolean.guest_mode') }}
 ```
@@ -114,7 +143,7 @@ integration queries before stopping:
 
 ```jinja
 {# Surface candidates by area, label, or integration #}
-{{ area_entities('Rob\'s Bedroom') | list }}
+{{ area_entities('Kid\'s Room') | list }}
 {{ label_entities('climate') | list }}
 {{ integration_entities('zwave_js') | list }}
 ```
@@ -162,7 +191,11 @@ Before any logic-bearing artifact is considered ready for deployment:
       ambiguity or debug failures
 - [ ] Validated against meaningful state, including unavailability
       and startup conditions
-- [ ] All entity references validated explicitly: use has_value() where usable state matters; use defined-entity checks where existence matters.
+- [ ] For branching, threshold, precedence, fallback, or override logic:
+      at least one materially different state, boundary, or negative case
+      tested in addition to the expected path — the test can fail for a
+      plausible incorrect implementation, not just confirm rendering
+- [ ] All entity references mechanically validated: use has_value() where usable state matters; use defined-entity checks where existence matters. Not inferred, not handed to the user to check one by one.
 - [ ] Defensive Jinja patterns applied and confirmed in output —
       see `snippets/jinja_patterns.md` for reference (safe defaults,
       type coercion, text normalization, structured input handling,
@@ -174,8 +207,9 @@ Before any logic-bearing artifact is considered ready for deployment:
 | Excuse | Reality |
 |---|---|
 | "It looks correct" | Run it. Looking correct proves nothing. |
+| "The expected text/entity ID showed up in the output" | Rendering isn't proof. A test that can't fail for a plausible incorrect implementation hasn't tested anything — validate a case that would expose a wrong implementation too. |
 | "I'll run separate checks for each piece" | Fragmented checks hide interaction failures. Validate the real decision path together. |
-| "The entity name is obvious" | It is not. Validate every referenced entity explicitly — do not normalize apostrophes, nicknames, or spelling by assumption (`rob_s_bedroom` not `robs_bedroom`). |
+| "The entity name is obvious" | It is not. Validate every referenced entity explicitly — do not normalize apostrophes, nicknames, or spelling by assumption (`kid_s_room` not `kids_room`). |
 | "`unknown` means the entity is missing" | `unknown` is also a valid runtime state for entities that exist. Use `has_value()` for usable-state checks; use `states.domain.object_id is not none` when defined-entity confirmation is required. |
 | "Current state looks right" | Confirm safe defaults cover unavailability and startup paths too. |
 | "I'll validate after deployment" | DTT/entity validation is the gate for deployment approval. Draft YAML may exist before DTT only when explicitly marked not deployment-ready. |
