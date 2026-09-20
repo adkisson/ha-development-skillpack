@@ -68,6 +68,11 @@ Universal, in effect for every workflow, every time:
   agreement.
 - Surface material uncertainty proactively. Do not present a guess as a
   conclusion.
+- When editing an existing YAML, Python, or Jinja artifact, edit
+  surgically: touch only what the task requires, preserve unrelated
+  formatting, comments, and structure, and never regenerate a file
+  wholesale to make a small change. This applies whenever existing content
+  is being modified, not only in Refactor.
 
 ## Priority Order
 

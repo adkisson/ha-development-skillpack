@@ -8,8 +8,8 @@ redesign riding along on an unrelated change.
 
 ## Invariants
 
-- Surgical diff over rewrite: minimum footprint unless a rewrite is
-  explicitly approved.
+- Surgical editing (Collaboration Baseline) applies at full strength here:
+  minimum footprint unless a rewrite is explicitly approved.
 - State the behavior contract before editing — what must still be true
   after the change — so preservation can actually be checked, not assumed.
 - No bundled unrelated cleanup. A refactor scoped to one thing stays scoped
