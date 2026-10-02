@@ -5,10 +5,6 @@
 
 ---
 
-## ⚠️ 2.0.0 restructure
-
-Version 2.0.0 reorganized the pack around five reasoning-state workflows (`workflows/ideation.md`, `architecture.md`, `development.md`, `debug.md`, `refactor.md`) routed from `SKILL.md`, replacing the old task-mode router and Session Modes, while reframing Architect/Dev as an orthogonal planning/execution role axis rather than dropping it. Several 1.x guides were retired and their content absorbed into the new workflow files. 2.0.0 also reduces procedural scaffolding in favor of outcome-, invariant-, and evidence-driven guidance intended for newer reasoning-capable models; behavior may differ with smaller or self-hosted LLMs. If you forked or built on a pre-2.0.0 version, expect breaking changes to file paths, structure, and prompting assumptions — see `changelog.md` for specifics.
-
 ## What this is
 
 This repository contains a **[skill](https://github.com/anthropics/skills) pack** I use when vibe coding (h/t to Anthropic, but it also works as a project file with ChatGPT) with Home Assistant YAML and Jinja.  It compiles and documents the things that have worked and approaches to fix those that LLMs still get wrong much of the time.
@@ -52,6 +48,12 @@ Second, I ask it (often a different model) to act as dev: review the design and 
 If something already built breaks, that's a separate debugging pass — root cause first, no quick patches. If I just want existing behavior cleaned up without changing it, that's a separate refactor pass.
 
 Each step feeds back into the previous as needed — design is pressure-tested before coding begins, and code is pressure-tested before it ships.
+
+---
+
+## Upgrading from 1.x
+
+Version 2.0.0 reorganized the pack around five reasoning-state workflows routed from `SKILL.md`, with breaking changes to file paths and structure. The pack favors outcome- and evidence-driven guidance written for current reasoning-capable models, so behavior may differ with smaller or self-hosted LLMs. See `changelog.md` for details.
 
 ---
 
