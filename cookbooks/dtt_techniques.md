@@ -371,10 +371,10 @@ defaults together.
 
 ## Avoid Python methods (use Jinja filters instead)
 
-**`.items()`** → use `dict2items` filter:
+**`.items()`** → use the `items` filter:
 
 ```jinja
-{% for p in (d | dict2items) %}{{ p.key }}={{ p.value }}{% endfor %}
+{% for k, v in d | items %}{{ k }}={{ v }}{% endfor %}
 ```
 
 **`.get(key, default)`** → use bracket access with `default` filter:
@@ -389,10 +389,10 @@ Or for HA attributes:
 {% set val = state_attr('sensor.payload', 'temperature') | default(72, true) %}
 ```
 
-**`.split(sep)`** → use `split()` filter:
+**`.split(sep)`** → use `regex_findall()` (it skips empty fields):
 
 ```jinja
-{% set parts = states('sensor.csv_data') | split(',') %}
+{% set parts = states('sensor.csv_data') | regex_findall('[^,]+') | map('trim') | list %}
 {{ parts[0] if (parts | length) > 0 else '' }},
 {{ parts[1] if (parts | length) > 1 else '' }}
 ```

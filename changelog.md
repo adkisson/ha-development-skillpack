@@ -1,4 +1,10 @@
 ## Changelog
+## 2.2.0 - 20261002
+- `snippets/jinja_patterns.md` and `cookbooks/dtt_techniques.md`: corrected four patterns that fail in Home Assistant — `states(...) | default(...)` (never applies; use `has_value()`), `state_attr(...) | default(...)` (keeps `None`; use `default(x, true)` or a typed filter), `dict2items` (no such filter; use `| items`), and `| split()` (no such filter; use `regex_findall()`). All corrections verified against HA 2026.9.4 and a live instance.
+- `patterns/restart_resilience.md`: startup stagger guideline and example now trigger on `timer.ha_startup_delay` `from: active` `to: idle`, matching the scaffolds and samples. Added threshold-trigger outage handling as two parts — (1) threshold trigger: purpose-specific `<domain>.crossed_threshold`, else `numeric_state` with an optional outage guard; (2) recovery and startup re-evaluation with an already-in-target-state condition — plus `for:` duration resets across restarts/dropouts and helper `initial:` overriding restored state.
+- `spec/yaml_style.md`: added `variables:` top-to-bottom render order and forward-reference failure modes.
+- `guides/construct_selection.md`: one-sided `condition: time` windows anchor at midnight; threshold-trigger rung points to the outage handling in `patterns/restart_resilience.md`.
+- `LICENSE`: updated homeassistant-ai/skills attribution for the incorporated material.
 ## 2.1.0 - 20261002
 - `workflows/development.md`: Completion now states outcomes instead of naming reference files, and the formal scored review in `guides/review_and_checklist.md` is reserved for Class A/B or structurally non-trivial work; restart, chatter, YAML/Jinja, and runtime references moved from Invariants to conditional Applicable References, so routine tasks no longer load them unconditionally.
 - `spec/runtime.md` and `guides/review_and_checklist.md`: BC review scoped to breaking changes affecting the integrations, services, triggers, and schema the artifact actually uses, reusing monthly release review findings where available, with `BC review: N/A` the expected outcome for stable core-only artifacts.

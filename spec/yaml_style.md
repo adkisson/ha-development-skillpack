@@ -76,6 +76,11 @@ Bad:
 - Use `if/then/else` for prioritized execution where conditions may overlap.
 - **`elif` is not valid in HA YAML** — use `choose` or nested `if/then/else` instead. (`elif` is valid in Jinja and AppDaemon Python; this rule is YAML-only.)
 
+## Variables
+
+- A `variables:` block renders its keys top to bottom, one at a time; a key can read only keys declared above it. Declare every key before the keys that use it.
+- A forward reference gives no clear error: arithmetic or `| int`/`| float` on it aborts the run, `{{ x }}` renders empty, and `x != 'value'` silently evaluates true.
+
 ---
 
 ## Trigger Standards

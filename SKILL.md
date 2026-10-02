@@ -5,7 +5,7 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 2.1.0
+**Version:** 2.2.0
 **Maintainers:** Rob
 **Date:** 20261002
 

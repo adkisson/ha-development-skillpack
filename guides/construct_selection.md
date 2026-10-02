@@ -72,7 +72,8 @@ trigger/condition exists for a domain without checking current docs.
   literal matches, `for:` for debounce).
 - Value crosses a threshold (generic) → `trigger: numeric_state`
   (`above:`/`below:`), not a state trigger paired with a template
-  condition.
+  condition. For restart and `unavailable` handling on either tier, see
+  `patterns/restart_resilience.md`.
 - Scheduled time (generic) → `trigger: time` (fixed) or a `time` trigger
   sourced from an `input_datetime` for deferred-intent deadlines (not
   polling — see `patterns/datetime_deadline.md`).
@@ -104,7 +105,10 @@ trigger/condition exists for a domain without checking current docs.
   composed with `condition: and` / `condition: or`, not
   `{{ is_state(...) and is_state(...) }}`.
 - Time-of-day or weekday gate (generic) → `condition: time`
-  (`after:`/`before:`/`weekday:`), not `{{ now().hour >= 9 }}`.
+  (`after:`/`before:`/`weekday:`), not `{{ now().hour >= 9 }}`. A
+  one-sided window anchors at midnight: `before: "21:00:00"` alone matches
+  00:00–21:00. Give both bounds for a daytime window; `after:` later than
+  `before:` spans midnight.
 
 ### Preserve intentional entity targeting
 

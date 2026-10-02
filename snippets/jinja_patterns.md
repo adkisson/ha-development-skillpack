@@ -12,12 +12,12 @@
 - **Text normalization**: `| lower | trim` → [Text Normalization](#text-normalization)
 - **Time math**: prefer `as_timestamp()` / `now()`; avoid `.total_seconds()` except for the guarded `.last_changed` / `.last_updated` staleness exception → [Datetime Safety](#datetime-safety), [Attribute Access](#attribute-access)
 - **Datetime parsing**: `as_datetime(value, default)` two-argument form only; never pipe-chain `| as_datetime | default()` → [Datetime Safety](#datetime-safety)
-- **Attributes**: `state_attr('entity','attr') | default(...)` (never `states.entity.attributes...`) → [Attribute Access](#attribute-access)
+- **Attributes**: `state_attr('entity','attr') | int(0)` / `| float(0)`, or `| default(x, true)` for text — a missing attribute returns `None`, which plain `default()` keeps (never `states.entity.attributes...`) → [Attribute Access](#attribute-access)
 - **No direct state-object access**: use `states()` and `state_attr()` exclusively; `.last_updated`/`.last_changed` permitted only for staleness/age with existence guard → [Attribute Access](#attribute-access)
 - **JSON out**: `| tojson` → [JSON Packaging](#json-packaging)
 - **CSV list**: `regex_findall('[^,]+') | map('trim') | map('lower') | reject('equalto','') | unique | list` → [String Operations](#string-operations-use-filters-not-python-methods)
 - **Dict lookups**: prefer `'key' in d` + indexing; allow `.get()` only on literal dicts → [Dict Lookup With Defaults](#dict-lookup-with-defaults-scoped-get-guidance)
-- **Iteration**: prefer `dict2items`; allow `.items()` only on literal dicts → [Keys/Values Iteration](#keysvalues-iteration)
+- **Iteration**: prefer the `items` filter (`d | items`); allow `.items()` only on literal dicts → [Keys/Values Iteration](#keysvalues-iteration)
 - **Entity set iteration**: `label_entities()` / `area_entities()` / `floor_entities()` return flat **string lists** — use `expand()` before accessing `.state` or `.entity_id` → [Entity Set Iteration](#entity-set-iteration-labelareafloorfunctions)
 - **No comments inside Jinja literals**: lists/dicts must contain **data only**.
   Put documentation **outside the template block** → [Comments in Jinja Literals](#comments-in-jinja-literals)
@@ -30,7 +30,7 @@
 
 ``` jinja
 {% set v = states('sensor.power') | float(0) %}
-{% set name = states('input_text.nickname') | default('unknown') %}
+{% set name = states('input_text.nickname') if has_value('input_text.nickname') else 'unknown' %}
 ```
 
 **Don't**
@@ -38,6 +38,7 @@
 ``` jinja
 {{ states.sensor.power.state | float }}                 {# breaks if entity missing #}
 {{ states('sensor.power') | float }}                    {# no default ⇒ NaN/None cascades #}
+{{ states('input_text.nickname') | default('none') }}  {# states() returns 'unknown' for a missing entity, so default() never applies #}
 ```
 
 **Note:**\
@@ -191,12 +192,14 @@ only when zero is a legitimate safe fallback.
 
 ``` jinja
 {% set br = state_attr('light.kitchen','brightness') | int(0) %}
+{% set mode = state_attr('climate.hall','preset_mode') | default('none', true) %}
 ```
 
 **Don't**
 
 ``` jinja
 {{ states.light.kitchen.attributes.brightness }}
+{{ state_attr('climate.hall','preset_mode') | default('none') }}  {# missing attribute is None, which default() keeps #}
 ```
 
 ### Direct state-object access prohibition
@@ -295,8 +298,8 @@ Never access the state object directly (e.g., `states.sensor.x.state`, `states.s
 **Do**
 
 ``` jinja
-{% for pair in (d | dict2items) %}
-  {{ pair.key }} → {{ pair.value }}
+{% for k, v in d | items %}
+  {{ k }} → {{ v }}
 {% endfor %}
 ```
 
@@ -313,7 +316,7 @@ Never access the state object directly (e.g., `states.sensor.x.state`, `states.s
 
 -   Avoid `.items()` on HA-returned or JSON-derived objects.
 -   Acceptable on known literal dicts.
--   Prefer `dict2items` in new or refactored artifacts.
+-   Prefer the `items` filter in new or refactored artifacts.
 
 ------------------------------------------------------------------------
 

@@ -35,7 +35,10 @@ Incorporated: selected HA footgun patterns and stewardship/safety-level review m
 **homeassistant-ai/skills** — Home Assistant Agent Skills
 MIT License — https://github.com/homeassistant-ai/skills
 Incorporated: native construct decision ladder, helper selection hierarchy,
-device_id vs entity_id guidance (v0.5.3)
+device_id vs entity_id guidance (v0.5.3); threshold-trigger outage behavior,
+`for:` duration resets, helper `initial:` restore override, `variables:`
+render order, one-sided time windows, and `default()` pitfalls (skill
+version 44, 2026-09-29)
 
 **Superpowers** — Agentic Skills Framework & Software Development Methodology
 Copyright (c) 2026 Jesse Vincent / Prime Radiant
