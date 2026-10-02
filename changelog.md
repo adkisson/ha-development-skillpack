@@ -1,4 +1,9 @@
 ## Changelog
+## 2.1.0 - 20261002
+- `workflows/development.md`: Completion now states outcomes instead of naming reference files, and the formal scored review in `guides/review_and_checklist.md` is reserved for Class A/B or structurally non-trivial work; restart, chatter, YAML/Jinja, and runtime references moved from Invariants to conditional Applicable References, so routine tasks no longer load them unconditionally.
+- `spec/runtime.md` and `guides/review_and_checklist.md`: BC review scoped to breaking changes affecting the integrations, services, triggers, and schema the artifact actually uses, reusing monthly release review findings where available, with `BC review: N/A` the expected outcome for stable core-only artifacts.
+- Added eligibility normalization: `workflows/architecture.md` invariant separating eligibility resolution from enforcement, a sharper load condition for `patterns/execution_gating.md`, and matching eligibility-placement items in the `guides/review_and_checklist.md` review flow and Master/Automation checklists.
+- Collaboration Baseline requires surgical edits whenever existing YAML/Python/Jinja is modified, not only during Refactor; `samples/event_driven_template_sample.yaml` gives its kelvin `int()` filter a 0 default.
 ## 2.0.0 - 20260809
 - `SKILL.md` rebuilt around a five-workflow reasoning-state router (Ideation/Architecture/Development/Debug/Refactor), replacing the task-mode router and Session Modes.
 - Added a Collaboration Baseline (owner authority, evidence-based pushback, surfacing uncertainty) and an Architect/Dev role axis orthogonal to workflow selection; calibration examples live in new `guides/architect_dev_roles.md`.

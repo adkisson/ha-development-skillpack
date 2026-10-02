@@ -30,11 +30,7 @@ calling it done.
   not reopened here.
 - Fast-fail condition ordering: cheap checks and likely rejections before
   expensive Jinja.
-- Restart/staggering windows — `patterns/restart_resilience.md`.
-  Idempotency/chatter control — `patterns/action_hygiene.md`. YAML/Jinja
-  standards — `spec/yaml_style.md`, `snippets/jinja_patterns.md`.
-- Backward-Incompatible review is required where applicable per
-  `spec/runtime.md` — confirm `BC review: done` or `BC review: N/A`.
+- Confirm `BC review: done` or `BC review: N/A` in the summary.
 - HAF/UX is a build-time question, not only a final check: does the
   implementation behave the way a person would naturally expect? Build to
   the HAF/UX assumptions established in Ideation/Architecture as the
@@ -42,13 +38,12 @@ calling it done.
 
 ## Completion
 
-- DTT-first validation complete per `guides/dtt_first_validation.md` — no
-  Jinja-bearing logic deployed without it.
+- Jinja-bearing logic DTT-validated before deployment approval.
 - Entity references confirmed (usable-state or defined-entity checks, as
   appropriate).
-- Production-readiness confirmed against `guides/review_and_checklist.md` —
-  that file is the detailed checklist/grading reference; this workflow
-  states the outcome, not the mechanism names.
+- Production-readiness confirmed, with the formal scored review reserved
+  for Class A/B or structurally non-trivial work; routine Class C/D changes
+  meet the same quality bar without the full checklist pass.
 - HAF/UX reviewed wherever behavior is perceptible to or controlled by a
   person — not narrowed to shared spaces or schedules. A bedroom
   automation, a personal notification, a lock, or a manual-switch
@@ -70,9 +65,14 @@ Load only what the specific task actually needs:
 - `snippets/jinja_patterns.md` — Jinja is involved.
 - `guides/dtt_first_validation.md` — template/state logic needs validation
   before deployment.
-- `guides/review_and_checklist.md` — confirming production-readiness.
-- Relevant `patterns/*` — only the specific pattern implicated (restart,
-  chatter, cloud actuation, etc.), not the whole directory.
+- `guides/review_and_checklist.md` — formal production-readiness review
+  for Class A/B or structurally non-trivial work.
+- Relevant `patterns/*` — only the specific pattern implicated, not the
+  whole directory: `patterns/restart_resilience.md` for restart/staggering
+  windows, `patterns/action_hygiene.md` for idempotency/chatter control,
+  and so on.
+- `spec/runtime.md` — scoping a BC review, or when the HA version floor
+  matters.
 - `cookbooks/dtt_techniques.md` — while running a DTT validation session.
 - `guides/artifact_authority.md` — samples or scaffolds are being
   consulted.

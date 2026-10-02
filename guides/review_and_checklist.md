@@ -26,7 +26,7 @@ artifact is not yet ready to run.
 | 9 | **Restart & recovery** — correct `for:` windows; no action delays for staggering | |
 | 10 | **Idempotency & chatter** — device call guards; batching; rate-limiting | |
 | 11 | **Overrides & safety** — applicable manual/guest/safety precedence confirmed | |
-| 12 | **Backward-Incompatible review** — last 12 months of breaking changes reviewed; confirm `BC review: done` or `BC review: N/A` | ✅ Yes if applicable and unconfirmed |
+| 12 | **Backward-Incompatible review** — breaking changes for the integrations/services/schema the artifact uses (last 12 months) reviewed per `spec/runtime.md`; confirm `BC review: done` or `BC review: N/A` | ✅ Yes if applicable and unconfirmed |
 | 13 | **Changelog** — entry added in correct format and location | |
 | 14 | **Exceptions** — any deviations documented inline | |
 | 15 | **Blueprint validation** — if applicable | |
@@ -91,6 +91,7 @@ Before deployment approval, scan for risk triggers that require specific validat
      2. **Implementation matches intent?** (Minimize checks for ON; rich validation for OFF; sequential+guarded for recovery)
      3. **Conditions in right place?** (Cheap checks first in conditions block; expensive operations only on needed paths)
      4. **Network traffic minimized?** (Z-Wave/Zigbee sequential+delayed; HA helpers redundant-call-safe; light transitions batched)
+     5. **Eligibility placement deliberate?** (Resolution shared only where inputs and intended answers match; enforcement shared only where rejection consequences also match; placement-dependent behavior changes documented and explicitly approved)
 
 8) **Wait Conditions & Timeouts**
    - Prefer `wait_template` with timeout and `continue_on_timeout: true` where feasible.
@@ -106,7 +107,7 @@ Before deployment approval, scan for risk triggers that require specific validat
     - Manual/guest/safety modes always win where applicable. See `/spec/safety.md`.
 
 12) **Backward-Incompatible Changes**
-    - Review last 12 months of HA breaking changes when applicable. Response must confirm `BC review: done` or `BC review: N/A`.
+    - Review breaking changes from the last 12 months for the integrations, services, and schema the artifact actually uses, per `spec/runtime.md`; reuse existing monthly release review findings where available. Response must confirm `BC review: done` or `BC review: N/A`.
 
 13) **Changelog & Versioning**
     - Add changelog entry per `spec/yaml_style.md`.
@@ -236,6 +237,7 @@ holistic call:
 - [ ] Any required state/actuation boundary is clear and appropriate to the design — no template-sensor "brain" forced onto work a simple native automation already expresses clearly and safely; scripts used for fan‑outs; concurrency verified sane
 - [ ] **Construct selection confirmed:** purpose-specific native construct preferred where it directly expresses intent and preserves the correct targeting/authority semantics, falling back to a generic native construct, then a template-based one, only as each preceding option fails to fit — see `guides/construct_selection.md`; `choose` used only for provably mutually exclusive branches (discriminated by trigger ID, entity state, or other HA-native discriminator); if/then/else used for prioritized execution where conditions may overlap; no elif in YAML
 - [ ] **Execution gating confirmed:** automations gate on positive evidence — no action executes unless all required conditions are provably met; default to no action on uncertainty
+- [ ] **Eligibility placement reviewed:** repeated eligibility facts share resolution where their inputs and intended answers match; enforcement is shared only where rejection consequences also match; placement-dependent behavior changes are documented and explicitly approved
 - [ ] Restart gates confirmed on triggers (`timer.ha_startup_delay` w/ appropriate `for:`); no action delays present
 - [ ] State trigger `to:`/`from:` and event trigger `event_type:` confirmed as **literal string matches only** — never Jinja; `for:` confirmed accepts Jinja where used; `trigger: template` + `value_template:` used for evaluated expressions
 - [ ] Jinja safety confirmed: safe defaults present (`| float(0)`, `| int(0)`)
@@ -254,7 +256,7 @@ holistic call:
 - [ ] DTT validation completed per `/guides/dtt_first_validation.md`; entity pre-flight confirmed; traces referenced if orchestration validated
 - [ ] Best-in-class review completed: intent clarity, implementation alignment, condition placement, network efficiency confirmed
 - [ ] Wait strategies confirmed: `wait_template` used where applicable; exclusion lists guard empty string; `continue_on_timeout: true` present
-- [ ] Backward-incompatible changes (12 months) reviewed and confirmed
+- [ ] Backward-incompatible changes (12 months, scoped to what the artifact uses) reviewed and confirmed
 - [ ] Exceptions documented inline using the artifact's supported documentation channel (`description:`/`alias:`/`note:` for automations/scripts where schema-supported; comments for YAML-defined entities)
 - [ ] Risks/alternatives/rollback documented; weighted score breakdown and hard-gate status recorded; verdict chosen
 - [ ] HAF/UX reviewed for any behavior perceptible to, relied upon by, or controlled by a person (see sub-checklist) — confirmed as final verification of assumptions already made earlier in the workflow, not first consideration
@@ -264,6 +266,7 @@ holistic call:
   - Note: trigger id uniqueness is required when triggers route to different evaluation paths. Multiple triggers may share an id when they intentionally collapse to a single identical evaluation sequence.
 - [ ] Randomized vs fixed `for:` per criticality on HA restart
 - [ ] Variables computed once at the narrowest appropriate scope; branches small & ordered cheap→expensive
+- [ ] **Eligibility placement reviewed:** repeated eligibility facts share resolution where their inputs and intended answers match; enforcement is shared only where rejection consequences also match; placement-dependent behavior changes are documented and explicitly approved
 - [ ] Deferred-intent datetime helpers (deadline-style `input_datetime`) declare owner and overdue policy in `description:` and implement explicit consume behavior (clear or re-arm)
 - [ ] No device calls inside loops without guards
 - [ ] No recursive loop: if trigger entity == action target entity, a `to:` constraint and re-entry condition are mandatory

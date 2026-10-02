@@ -12,7 +12,7 @@
 
 ## Refactor & Upgrade Policy
 
-Any refactor or enhancement MUST include a review of Home Assistant release notes from the **last 12 months up to and including the current release**. Proactively adapt code for **backward-incompatible (breaking)** schema, attribute, service, or behavior changes affecting the **artifacts being authored, modified, or reviewed**.
+Any refactor or enhancement includes a backward-incompatible (BC) review scoped to the **artifacts being authored, modified, or reviewed**. Covering releases from the **last 12 months up to and including the current release**, check the breaking-changes entries only for the integrations, services, triggers, and schema the artifact actually uses, and adapt the code for any schema, attribute, service, or behavior change that affects it. Where a monthly release review has already covered a release, reuse its findings for that release. When the artifact relies only on stable core constructs with no recent breaking changes, `BC review: N/A` is the correct outcome.
 
 The **reviewer or developer** must confirm the outcome in their **summary** (not in automation/script artifacts or changelogs) as:
 - `BC review: done`

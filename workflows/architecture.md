@@ -30,6 +30,14 @@ begins.
 - `choose` only for provably mutually exclusive branches (discriminated by
   trigger ID, entity state, or another HA-native signal). `if/then/else` for
   prioritized or overlapping conditions. `elif` is not valid HA YAML.
+- **Eligibility normalization:** Treat eligibility resolution and enforcement
+  as separate decisions. Resolve a repeated eligibility fact once when its
+  inputs and intended answer are the same. Share its enforcement scope only
+  when the consequences of rejection are also equivalent. Before moving a
+  gate, account for placement-dependent effects such as `last_triggered`,
+  events and Logbook entries, traces, forced execution, and failure handling.
+  Retain context-specific enforcement or explicitly approve the behavioral
+  difference when those effects matter.
 - HAF is a structural question here, not only a final check: does this
   structure preserve intuitive manual control, predictable behavior, clear
   authority, and reasonable recovery? A technically clean structure that
@@ -56,8 +64,9 @@ begins.
 - `guides/construct_selection.md` — when the construct tier isn't already
   obvious.
 - `guides/system_impact_class.md` — when not already classified upstream.
-- `patterns/execution_gating.md` — when the control-flow gating shape is
-  non-trivial.
+- `patterns/execution_gating.md` — load when eligibility logic is repeated
+  across paths, startup recovery shares an automation with scheduled behavior,
+  or condition placement materially affects clarity or execution.
 - `scaffolds/options_matrix.md` — when comparing multiple viable structural
   options.
 - `guides/artifact_authority.md` — when samples or scaffolds are being

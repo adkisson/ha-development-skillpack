@@ -5,9 +5,9 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 **Maintainers:** Rob
-**Date:** 20260809
+**Date:** 20261002
 
 # Home Assistant Development Skillpack
 
