@@ -248,7 +248,7 @@ That is a valid timer use case because it is a **cancelable grace window**, not 
 
 ## Testing & Validation
 
-Validated in Developer Tools → Templates for:
+Validated in Tools → Template for:
 
 - fallback from `unknown` to sentinel
 - stable equality between repeated `as_datetime('2999-01-01 00:00:00')` calls

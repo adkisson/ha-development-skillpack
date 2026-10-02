@@ -42,6 +42,7 @@ template:
           - sensor.example_outdoor_irradiance
           - sensor.example_room_lux
           - binary_sensor.example_area_sub_presence
+        to: null
       - trigger: time_pattern
         minutes: "/15"
       - trigger: state

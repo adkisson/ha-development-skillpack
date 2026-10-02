@@ -38,6 +38,7 @@ template:
         entity_id:
           - sensor.example_area_ambient_lux
           - input_boolean.example_area_lights_disable
+        to: null
 
       # Post-restart recovery (non-critical, staggered)
       - trigger: state

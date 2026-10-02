@@ -1,4 +1,4 @@
-# Developer Tools Template (DTT) Techniques
+# DTT (Tools → Template) Techniques
 
 ## The standard: monolithic probe, single paste
 

@@ -133,7 +133,7 @@ When useful, summarize the highest safety level demonstrated:
 - **L1 — Type Safe:** HA state types, casts, fallbacks, and unavailable values are handled.
 - **L2 — Behavior Safe:** DTT validation covers normal, unavailable, startup, and boundary states.
 - **L3 — Steward Safe:** edits are surgical; entity IDs, aliases, comments, scope, and user intent are preserved.
-- **L4 — Operator Safe:** live validation surfaces such as config check, traces, logs, or Developer Tools confirm behavior.
+- **L4 — Operator Safe:** live validation surfaces such as config check, traces, logs, or Tools confirm behavior.
 
 This summary does not replace the Skill Pack checklist, verdict, or score.
 
@@ -236,7 +236,7 @@ holistic call:
 - [ ] **Startup triggers** confirmed only where post-restart actions needed (state recovery, initialization); not present for passive automations
 - [ ] Any required state/actuation boundary is clear and appropriate to the design — no template-sensor "brain" forced onto work a simple native automation already expresses clearly and safely; scripts used for fan‑outs; concurrency verified sane
 - [ ] **Construct selection confirmed:** purpose-specific native construct preferred where it directly expresses intent and preserves the correct targeting/authority semantics, falling back to a generic native construct, then a template-based one, only as each preceding option fails to fit — see `guides/construct_selection.md`; `choose` used only for provably mutually exclusive branches (discriminated by trigger ID, entity state, or other HA-native discriminator); if/then/else used for prioritized execution where conditions may overlap; no elif in YAML
-- [ ] **Execution gating confirmed:** automations gate on positive evidence — no action executes unless all required conditions are provably met; default to no action on uncertainty
+- [ ] **Execution gating confirmed:** automations gate on positive evidence — no action executes unless all required conditions are provably met; default to no action on uncertainty; timer, cooldown, and deadline expiries trigger re-evaluation, not action by themselves
 - [ ] **Eligibility placement reviewed:** repeated eligibility facts share resolution where their inputs and intended answers match; enforcement is shared only where rejection consequences also match; placement-dependent behavior changes are documented and explicitly approved
 - [ ] Restart gates confirmed on triggers (`timer.ha_startup_delay` w/ appropriate `for:`); no action delays present
 - [ ] State trigger `to:`/`from:` and event trigger `event_type:` confirmed as **literal string matches only** — never Jinja; `for:` confirmed accepts Jinja where used; `trigger: template` + `value_template:` used for evaluated expressions
@@ -250,6 +250,7 @@ holistic call:
 - [ ] Type safety confirmed: raw/typed variables separated; comparisons use typed with tolerance
 - [ ] Availability/existence confirmed: defined-entity validation used where existence matters; `has_value()` used where usable state matters; blank-string guard added for sources known to emit blanks (1)
 - [ ] Event-driven confirmed preferred; polling ≥60s and justified where used
+- [ ] No bloat: no automation duplicating another's trigger and purpose, no template logic copied across sensors, no unused helpers, no construct more elaborate than the behavior requires; noisy sources feed one derived entity (`spec/performance.md`)
 - [ ] Fast-fail condition ordering confirmed: cheap checks first; likely failures early; expensive Jinja last
 - [ ] Chatter confirmed minimized; idempotent guards present; groups/areas used; rate‑limit applied as needed
 - [ ] Observability confirmed: `reason` attr present where external or ambiguous inputs exist; production logs only for significant events
@@ -262,7 +263,7 @@ holistic call:
 - [ ] HAF/UX reviewed for any behavior perceptible to, relied upon by, or controlled by a person (see sub-checklist) — confirmed as final verification of assumptions already made earlier in the workflow, not first consideration
 
 ### Automation Sub‑Checklist
-- [ ] Minimal, precise triggers; unique `id` and `alias`
+- [ ] Minimal, precise triggers (`to: null` on state triggers unless attributes are read); unique `id` and `alias`
   - Note: trigger id uniqueness is required when triggers route to different evaluation paths. Multiple triggers may share an id when they intentionally collapse to a single identical evaluation sequence.
 - [ ] Randomized vs fixed `for:` per criticality on HA restart
 - [ ] Variables computed once at the narrowest appropriate scope; branches small & ordered cheap→expensive

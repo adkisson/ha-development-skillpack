@@ -30,6 +30,7 @@ define structure.
 | Script | `/scaffolds/script.yaml` |
 | Template sensor | `/scaffolds/template_sensor.yaml` |
 | Options comparison | `/scaffolds/options_matrix.md` |
+| Architect → Dev handoff | `/scaffolds/architect_handoff.md` |
 
 ## Placeholder Entities
 

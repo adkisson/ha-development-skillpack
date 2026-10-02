@@ -19,6 +19,7 @@ triggers:
     id: directive_update
     trigger: state
     entity_id: sensor.hvac_control_directive
+    to: null
 
   - alias: HA startup – non-critical staggered (45–75s random)
     id: startup_noncritical

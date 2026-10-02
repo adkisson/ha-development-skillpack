@@ -8,7 +8,7 @@ For DTT validation patterns, see `cookbooks/dtt_techniques.md`.
 
 ## Tabs & Tools
 
-- **DTT** (Developer Tools → Templates): first stop for all logic
+- **DTT** (Tools → Template): first stop for all logic
   failures — templates, conditions, computed values. See
   `guides/dtt_first_validation.md` for the full validation cycle.
 - **Automation Traces**: orchestration only — trigger firing,

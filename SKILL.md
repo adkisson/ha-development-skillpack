@@ -5,7 +5,7 @@ description: >
 ---
 # SKILL.md
 
-**Version:** 2.2.0
+**Version:** 2.3.0
 **Maintainers:** Rob
 **Date:** 20261002
 
@@ -54,6 +54,8 @@ Non-negotiable, checked before workflow reasoning applies:
   implicit and lightweight rather than a formal pass.
 - Never invent entities, devices, integrations, helpers, or configuration
   surfaces — verify existence, don't assume it.
+- When the session can read or change a running HA instance, follow
+  `spec/live_access.md`.
 
 ## Collaboration Baseline
 
@@ -123,7 +125,9 @@ to be the same.
 
 Workflow determines what kind of problem is unresolved. Architect
 determines how to approach resolving it. Dev resolves it against reality.
-See `guides/architect_dev_roles.md` for calibration examples.
+See `guides/architect_dev_roles.md` for calibration examples. When Dev
+runs in a separate session or model, the Architect hands off with
+`scaffolds/architect_handoff.md`.
 
 ## Core Boundaries
 

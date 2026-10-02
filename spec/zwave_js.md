@@ -1,6 +1,6 @@
 # Z-Wave JS Central Scene Authoring
 
-Central Scene gestures are stateless Z-Wave JS value notifications. Capture a live gesture in Developer Tools → Events using `zwave_js_value_notification` before authoring automation YAML.
+Central Scene gestures are stateless Z-Wave JS value notifications. Capture a live gesture in Tools → Events using `zwave_js_value_notification` before authoring automation YAML.
 
 Home Assistant documents Central Scene notifications as `zwave_js_value_notification` events. Observed and documented payloads include fields such as `device_id`, `endpoint`, `command_class`, `command_class_name`, `property`, `property_key`, `value`, and `value_raw`.
 
@@ -166,7 +166,7 @@ Treat the map as a fallback convenience, not an authority. Captured payloads are
 
 ## Validation checklist
 
-1. Capture the live gesture payload in Developer Tools → Events using `zwave_js_value_notification`.
+1. Capture the live gesture payload in Tools → Events using `zwave_js_value_notification`.
 2. Confirm `device_id`, `endpoint`, `property_key`, `value`, and `value_raw`.
 3. If using exact device triggers, start from UI-generated YAML when possible.
 4. Reload automations to catch schema errors.

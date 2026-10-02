@@ -12,7 +12,7 @@ only when the evidence requires it.
   not a root cause.
 - Validate against the surface the failure actually lives on — don't force
   one validation method onto a failure it can't speak to:
-  - **Template/state logic** — prove it in Developer Tools → Templates
+  - **Template/state logic** — prove it in Tools → Template
     (DTT). See `guides/dtt_first_validation.md`.
   - **Orchestration and timing** — prove it with Automation Traces and
     runtime evidence (Logbook, integration logs, restart timing).

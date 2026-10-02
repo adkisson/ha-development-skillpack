@@ -43,7 +43,7 @@ I use this Skill across several prompt sessions — sometimes with different AI 
 
 First, I ask one AI to act as architect — planning whatever the problem actually needs, whether that's a full design, a debugging strategy, or a one-line note that a change is trivial: discuss it in plain English, present options with tradeoffs, identify potential flaws and shortcomings, pressure-test the approach before any code is written, and document testing/acceptance criteria. The goal is to surface and resolve design problems early — not after they're baked into YAML.
 
-Second, I ask it (often a different model) to act as dev: review the design and push back on implicit assumptions, then implement the agreed design and validate it in Developer Tools before I call it done.
+Second, I ask it (often a different model) to act as dev: review the design and push back on implicit assumptions, then implement the agreed design and validate it in Tools → Template before I call it done.
 
 If something already built breaks, that's a separate debugging pass — root cause first, no quick patches. If I just want existing behavior cleaned up without changing it, that's a separate refactor pass.
 

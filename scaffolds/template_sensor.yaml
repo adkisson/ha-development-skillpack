@@ -34,13 +34,15 @@
 ##########
 template:
   - triggers:
-      # Re-evaluate when any dependency changes (add/remove as needed)
+      # Re-evaluate when any dependency's state changes (add/remove as needed;
+      # remove `to: null` if the template reads their attributes)
       - trigger: state
         entity_id:
           - sensor.example_input_a
           - sensor.example_input_b
           - sensor.example_input_c
           - input_boolean.house_sitter_mode
+        to: null
       # Re-evaluate after startup delay (non-critical: 45–75s randomized stagger)
       - trigger: state
         entity_id: timer.ha_startup_delay

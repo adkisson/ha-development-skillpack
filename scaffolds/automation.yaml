@@ -33,6 +33,7 @@ triggers:
     id: source_changed
     trigger: state
     entity_id: sensor.example_source
+    to: null
 
   - alias: Time-based trigger (06:00 daily)
     id: time_trigger

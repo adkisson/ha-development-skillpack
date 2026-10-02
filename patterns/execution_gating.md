@@ -14,6 +14,7 @@ This applies at every level and scales from a single native condition to a resol
 - **Positive framing at every level**: a single `condition: state` that must be true, a `numeric_state` threshold that must be met, or a computed `allow_*` / `run_*` / `should_*` variable — all are valid execution gates. Choose the simplest form that makes the positive case readable.
 - **Single resolution point**: evaluate each gate once, after inputs are normalized. Never re-evaluate the same blocking fact in multiple places.
 - **Actions follow the positive path**: timestamps, sent flags, device commands, and notifications live inside the positive branch — never before the gate or in a negative branch.
+- **Act on what the inputs call for, not on elapsed time**: elapsed time alone — a grace window, cooldown, or deadline coming due — is a reason to re-evaluate the current inputs, not a reason to act. Act only when those inputs call for a state the device or system is not already in. This keeps expiry, recovery, and startup paths from re-asserting a state a person changed deliberately.
 - **Explicit negative case**: when the negative path has meaning (fallback action, audit trail), provide an `else:` branch. When it does not, `else:` may be omitted; a bare `stop:` is acceptable when an explicit denial record aids debugging.
 
 ## Simple gate — single condition

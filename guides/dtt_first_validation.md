@@ -6,7 +6,7 @@
 ## Purpose
 
 State expected behavior explicitly before deployment approval. Validate
-logic in Developer Tools → Templates before deployment. Confirm
+logic in Tools → Template before deployment. Confirm
 orchestration separately with Automation Traces.
 
 No Jinja-bearing or entity-dependent artifact may be approved for deployment until DTT/entity validation is complete. Draft YAML and patch review may occur before DTT when the artifact is explicitly marked not deployment-ready.
@@ -51,7 +51,7 @@ compute the wrong answer.
 
 ### Step 1 — State Expectations Explicitly
 
-Before opening Developer Tools, write down in plain terms:
+Before opening Tools → Template, write down in plain terms:
 
 - What should this template return when everything is working?
 - What should it return when a key entity is unavailable?
@@ -62,7 +62,7 @@ This step is not optional. Skipping it means you are validating
 without a target — you will not recognize a wrong result when you
 see one.
 
-### Step 2 — Validate Logic in Developer Tools
+### Step 2 — Validate Logic in Tools → Template
 
 Prefer validating a single combined Jinja expression when it matches
 the real decision path and remains understandable. Break validation
@@ -72,7 +72,7 @@ isolation when the production behavior depends on their interaction —
 fragmented checks hide interaction failures and produce false
 confidence.
 
-Run validation in Developer Tools → Templates against meaningful
+Run validation in Tools → Template against meaningful
 current state. Confirm outputs match stated expectations.
 
 **Validate representative states.** Current live state may be
@@ -168,11 +168,11 @@ After logic is confirmed correct:
 - Simplify Jinja expressions (remove redundant filters, clarify logic)
 - Tighten conditions
 - Confirm chatter guards are correct
-- Re-run Developer Tools validation to confirm output is unchanged
+- Re-run Tools → Template validation to confirm output is unchanged
 
 ## Relationship to Automation Traces
 
-Developer Tools → Templates validates **logic** — computed values,
+Tools → Template validates **logic** — computed values,
 conditions, state expressions.
 
 Automation Traces validate **orchestration** — trigger firing,

@@ -29,7 +29,7 @@ attributes:
   # debug_proxy_available: "{{ has_value('binary_sensor.proxy_witness') }}"
 ```
 
-Uncomment lines in YAML, reload templates/restart, then re-comment when done. The sensor will expose those attributes for inspection in Developer Tools or automations.
+Uncomment lines in YAML, reload templates/restart, then re-comment when done. The sensor will expose those attributes for inspection in Tools → States or automations.
 
 ## Degradation & Observability
 For sensors depending on external data sources (e.g., non-Home Assistant APIs or REST sensors), expose degradation state via attributes (see `/patterns/integration_degradation.md`).
